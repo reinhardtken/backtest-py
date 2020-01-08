@@ -78,7 +78,7 @@ def TestTwo(codes, beginMoney, args):
 def TestThree(codes, beginMoney, args):
   import strategy.dv3
   
-  stock = strategy.dv3.TradeManager(codes, beginMoney)
+  stock = strategy.dv3.TradeManager(codes, beginMoney=beginMoney)
   stock.LoadQuotations()
   stock.LoadIndexs()
   stock.Merge()
@@ -340,23 +340,23 @@ if __name__ == '__main__':
   start = '2011-01-01T00:00:00Z'
   end = '2019-12-31T00:00:00Z'
 
-  out = []
-  client = MongoClient()
-  db = client["stock_backtest"]
-  # collection = db["all_dv3"]
-  collection = db["dv2"]
-  cursor = collection.find({'tradeCounter': {'$gte': 1}})
-  # cursor = collection.find()
-  for one in cursor:
-    # print(one)
-    out.append({'_id': one['_id'], 'name': one['name'], 'percent': one['percent'],
-                'holdStockNatureDate': one['holdStockNatureDate'],
-                'tradeCounter': one['tradeCounter']})
-  
-  # tools.DoAction(out, tools.CalcDV)
-  # tools.CalcDVAll()
-  tools.CalcDV([{'_id': '600015', 'name': '华能水电', },
-                {'_id': '000895', 'name': '格力电器', },])
+  # out = []
+  # client = MongoClient()
+  # db = client["stock_backtest"]
+  # # collection = db["all_dv3"]
+  # collection = db["dv2"]
+  # cursor = collection.find({'tradeCounter': {'$gte': 1}})
+  # # cursor = collection.find()
+  # for one in cursor:
+  #   # print(one)
+  #   out.append({'_id': one['_id'], 'name': one['name'], 'percent': one['percent'],
+  #               'holdStockNatureDate': one['holdStockNatureDate'],
+  #               'tradeCounter': one['tradeCounter']})
+  #
+  # # tools.DoAction(out, tools.CalcDV)
+  tools.CalcDVAll()
+  # tools.CalcDV([{'_id': '600015', 'name': '华能水电', },
+  #               {'_id': '000895', 'name': '格力电器', },])
   # df = ts.get_deposit_rate()
   # print(df)
   # hold.CalcHoldTime(stockList.VERSION_DV1.GOOD_LIST, 'dv2', start, end)
@@ -403,10 +403,7 @@ if __name__ == '__main__':
   #   TestTwo(tmp, 100000, {'check': False, 'backtest': True, 'save': True})
   
   
-  from index import trend
-  from index import times
-  # trend.ProfitMarginTrend.Run(['601088', '600809', '002269'])
-  # trend.ProfitMarginTrend.Run(['601009', '601166', '600036', '601818'])
+
 
   # df = util.QueryAll()
   # codes = []
@@ -443,16 +440,7 @@ if __name__ == '__main__':
   # SignalAll()
   # CalcDVAll()
   
-  # HoldAll()
-  # df1 = TestA()
-  # df2 = TestB()
-  # merge = pd.merge(df1, df2)
-  # merge2 =df1.join(df2, how='inner', rsuffix='right')
-  # merge = merge[['name', 'diff', 'percent', '统计年数', '分红年数', 'maxValue:value', '所属行业', '地区', 'markValue']]
-  # merge.to_excel("c:/workspace/tmp/1223-merge.xlsx")
-  # print(merge)
-  # print(merge2)
-  # strategy.dv1.SignalDV([{'_id': '600900', 'name': '长江电力'}])
+
 
   # client = MongoClient()
   # db = client["stock_backtest"]
@@ -465,19 +453,8 @@ if __name__ == '__main__':
   # strategy.dv1.CalcQuarterSpeed(out, 2019)
   
   
-  # strategy.dv1.CalcDV([{'_id': '002085', 'name': ''}, {'_id': '002191', 'name': ''}])
-  #'601515', 133705, '东风股份'
-  # TestTwo(
-  #         # [
-  #         #   {'_id': '600025', 'name': '华能水电', },
-  #         #   {'_id': '601166', 'name': '兴业银行', 'money': 90205},
-  #         #   {'_id': '600900', 'name': '长江电力', 'money': 63905},
-  #         #  ],
-  #   [
-  #     {'name': '002085', '_id': '002085', },
-  #     # {'name': '皖通高速', '_id': '600012', 'money': 52105},
-  #   ],
-  #   100000, {'save': False, 'check': False, 'backtest':True})
+
+  
 
   # TestThree(
   #         # [
@@ -487,7 +464,7 @@ if __name__ == '__main__':
   #         #  ],
   #   [
   #     # {'name': '东风股份', '_id': '601515', 'money': 133705},
-  #     {'name': '泸州老窖', '_id': '000568', 'money': 52105},
+  #     {'name': '泸州老窖', '_id': '000651', 'money': 52105},
   #     # {'name': '重庆水务', '_id': '601158', 'money': 58105},
   #     # {'name': '浦发银行', '_id': '600000', 'money': 74505},
   #     # {'name': '万科', '_id': '000002', 'money': 72705},

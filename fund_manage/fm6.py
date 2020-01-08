@@ -117,7 +117,7 @@ class FundManager:
     self.dfM.drop(['willDrop', ], axis=1, inplace=True)
     
     self.quarterDetail = {}
-  
+    self.lastAccDivedendNegative = {} #记录因为分红不合格丢弃的开仓动作
   
   
   def gather(self, date, df, maxAndRetracement, month):
@@ -143,10 +143,18 @@ class FundManager:
   def Process(self, context, task):
     if task.key == Message.SUGGEST_BUY_EVENT:
       # 缓存
-      self.eventCache[context] = Task(
-        Priority(
-          Message.STAGE_BUY_TRADE, Message.PRIORITY_BUY),
-        Message.BUY_EVENT, None, *task.args)
+      #检查是否满足分红条件，满足缓存，不满足直接丢弃
+      if task.args[4]:
+        self.eventCache[context] = Task(
+          Priority(
+            Message.STAGE_BUY_TRADE, Message.PRIORITY_BUY),
+          Message.BUY_EVENT, None, *task.args)
+      else:
+        if context.code in self.lastAccDivedendNegative:
+          if context.date - self.lastAccDivedendNegative[context.code] < timedelta(days=30):
+            return
+        self.lastAccDivedendNegative[context.code] = context.date
+        print('### not enough dividend {} {} '.format(context.code, context.date))
       # context.AddTask(
       #   Task(
       #     Priority(

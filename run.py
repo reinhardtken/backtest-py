@@ -16,6 +16,7 @@ from filter import dvYear
 from filter import hs300
 from filter import ipoYear
 from filter import dvYearAll
+import tools
 # this project
 
 
@@ -67,10 +68,11 @@ def RunHS300AndDVYears():
                 'holdStockNatureDate': one['holdStockNatureDate'],
                 'tradeCounter': one['tradeCounter']})
   
-  inList, outList = dvYearAll.Filter(out)
+  # inList, outList = dvYearAll.Filter(out)
+  inList, outList = dvYear.Filter(out)
   in2, out2 = hs300.Filter(inList)
-  # in3, out3 = hs300.Filter(outList)
-  in3, out3 = ipoYear.Filter(in2)
+  in3, out3 = hs300.Filter(outList)
+  # in3, out3 = ipoYear.Filter(in2)
   
   for one in out:
     if one['_id'] in out2:
@@ -79,6 +81,7 @@ def RunHS300AndDVYears():
   for one in out:
     if one['_id'] in in3:
       print('not dvYear {} {}'.format(one['_id'], one['name']))
+      
   
   codes = []
   for one in out:
@@ -94,8 +97,16 @@ def RunHS300AndDVYears():
       codes.append(one)
   
   print('### final backtest stock list size {}'.format(len(codes)))
+  empty = []
   for one in codes:
     print(one)
+    tmp = util.LoadData('stock_statistcs_dvYears', one['_id'])
+    if tmp is None:
+      print('no dvdata !!! {}'.format(one))
+      empty.append(one)
+
+  tools.DoAction(empty, tools.CalcDV)
+      
   # TestThree(codes, 100000,
   #           {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
   TestThree(codes, 100000,

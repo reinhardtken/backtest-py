@@ -39,6 +39,7 @@ def CalcDVAll():
 
 def DoAction(codes, action, size=100):
   # #每次100个
+  index = 0
   for index in range(0, len(codes), size):
     tmp = codes[index:index+size]
     print('now index  {}  #################'.format(index))
