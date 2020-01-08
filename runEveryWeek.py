@@ -52,7 +52,6 @@ def TestThree(codes, beginMoney, args):
   return stock
 
 
-
 def RunHS300AndDVYears():
   out = []
   client = MongoClient()
@@ -98,21 +97,19 @@ def RunHS300AndDVYears():
   # TestThree(codes, 100000,
   #           {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
   TestThree(codes, 100000,
-            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': r'C:\workspace\tmp/dv3'})
-
-
+            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None,
+             'saveFile': r'd:/stock_python/out/dv3'})
 
 
 #########################################################
-###这个文件每天执行一次，只回测runEveryWeek的输出结果集合，刷新最新的回测结果
+###这个文件每周执行一次，对全部股票集合进行回测，输出最近一年符合交易的标的
 if __name__ == '__main__':
   import strategy.dv3
   from const import stockList
   from fund_manage import hold
   
-  
-  #下面这段代码是为了生成分红年数数据，因为用这个做了过滤器。
-  #如果不用分红年份做过滤器，可以不执行，执行一次即可
+  # 下面这段代码是为了生成分红年数数据，因为用这个做了过滤器。
+  # 如果不用分红年份做过滤器，可以不执行，执行一次即可
   # codes = []
   # df = util.QueryAll()
   # for code, row in df.iterrows():
@@ -120,8 +117,7 @@ if __name__ == '__main__':
   #
   # strategy.dv3.CalcDV(codes)
   
-  
-  #对全部股票标的中，产生过交易并且属于沪深300，并且分红年份达标的标的回测
+  # 对全部股票标的中，产生过交易并且属于沪深300，并且分红年份达标的标的回测
   RunHS300AndDVYears()
   
   # TestThree(
@@ -142,4 +138,3 @@ if __name__ == '__main__':
   #     #  {'name': '伟星股份', '_id': '002003', 'money': 80805},
   #   ],
   #   100000, {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
-  

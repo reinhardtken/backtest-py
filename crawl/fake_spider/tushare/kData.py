@@ -86,18 +86,7 @@ def saveDB(data: pd.DataFrame, code, handler=None):
   # util.everydayChange(re, 'gpfh')
 
 
-def run():
-  STOCK_LIST = setting.currentStockList()
-  for one in STOCK_LIST:
-    re = getKDataRecent(one)
-    saveDB(re, one)
-    
 
-def runAll():
-  STOCK_LIST = setting.currentStockList()
-  for one in STOCK_LIST:
-    re = getKData(one)
-    saveDB(re, one)
     
 
 #这个是前复权
@@ -147,7 +136,7 @@ def RunOneNoneRecent(code):
 
 def RunHS300IndexRecent():
   now = datetime.datetime.now()
-  starts = now - datetime.timedelta(days=31)
+  starts = now - datetime.timedelta(days=15)
   # starts = datetime.datetime(now.year, now.month, 1)
   starts = starts.strftime('%Y-%m-%d')
   re = getKDataNone('000300', starts, index=True)

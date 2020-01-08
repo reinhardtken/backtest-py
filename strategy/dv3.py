@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
 # https://www.cnblogs.com/nxf-rabbit75/p/11111825.html
 
-VERSION = '2.0.0.10'
+VERSION = '2.0.0.11'
 
 DIR_BUY = const.DV2.DIR_BUY
 DIR_NONE = const.DV2.DIR_NONE
@@ -420,11 +420,13 @@ class Account:
       out['priceSell'] = self.priceDiff[1]
       out['priceWhere'] = self.priceDiff[2]
       out['priceFrom'] = self.priceDiff[3]
+      out['priceFromDate'] = self.priceDiff[4]
     else:
       out['priceBuy'] = np.nan
       out['priceSell'] = np.nan
-      out['priceWhere'] = np.nan
+      out['priceWhere'] = ''
       out['priceFrom'] = np.nan
+      out['priceFromDate'] = pd.Timestamp(datetime(2001, 1, 1)),
 
     util.SaveMongoDB(out, 'stock_backtest', dbName)
 
@@ -758,11 +760,27 @@ class StrategyDV:
           anchor1 = self.specialPaper[year][0]
         if 1 in self.specialPaper[year]:
           anchor2 = self.specialPaper[year][1]
+          
+      #如果年报登记日期更早，使用更早的日期
+      if 'date' in self.dv2Index.checkPoint[year-1]['year']:
+        if self.dv2Index.checkPoint[year-1]['year']['date'] < anchor1:
+          anchor1 = self.dv2Index.checkPoint[year-1]['year']['date']
+
+      # 如果半年报登记日期更早，使用更早的日期
+      if 'date' in self.dv2Index.checkPoint[year]['midYear']:
+        if self.dv2Index.checkPoint[year]['midYear']['date'] < anchor2:
+          anchor2 = self.dv2Index.checkPoint[year]['midYear']['date']
       
-      # TODO wrong should year-1
-      self.eventDF.loc[anchor0:anchor1, 'where'] = str(year) + '-midYear'
-      self.eventDF.loc[anchor0:anchor1, 'buyPrice'] = self.dv2Index.checkPoint[year - 1]['buyPrice2']
-      self.eventDF.loc[anchor0:anchor1, 'sellPrice'] = self.dv2Index.checkPoint[year - 1]['sellPrice2']
+      #如果半年报又没东西，只能用前年的年报了
+      if self.dv2Index.checkPoint[year - 1]['buyPrice2'] == INVALID_BUY_PRICE and \
+        'buyPrice' in self.dv2Index.checkPoint[year-1]:
+        self.eventDF.loc[anchor0:anchor1, 'where'] = str(year-1) + '-year3'
+        self.eventDF.loc[anchor0:anchor1, 'buyPrice'] = self.dv2Index.checkPoint[year-1]['buyPrice']
+        self.eventDF.loc[anchor0:anchor1, 'sellPrice'] = self.dv2Index.checkPoint[year-1]['sellPrice']
+      else:
+        self.eventDF.loc[anchor0:anchor1, 'where'] = str(year-1) + '-midYear'
+        self.eventDF.loc[anchor0:anchor1, 'buyPrice'] = self.dv2Index.checkPoint[year - 1]['buyPrice2']
+        self.eventDF.loc[anchor0:anchor1, 'sellPrice'] = self.dv2Index.checkPoint[year - 1]['sellPrice2']
       
       self.eventDF.loc[anchor1 + timedelta(days=1):anchor2, 'where'] = str(year - 1) + '-year'
       self.eventDF.loc[anchor1 + timedelta(days=1):anchor2, 'buyPrice'] = self.dv2Index.checkPoint[year]['buyPrice']
@@ -807,6 +825,8 @@ class StrategyDV:
         if flag == 1:
           self.eventDF.loc[tmp['date']:anchor3, 'buyPrice'] = tmp['buyPriceX']
           self.eventDF.loc[tmp['date']:anchor3, 'sellPrice'] = tmp['sellPriceX']
+
+
 
   def forecast2DF(self):
   
@@ -882,7 +902,7 @@ class StrategyDV:
     buyPrice, sellPrice, where, forecast = self.MakeDecisionPrice2(date)
     buySignal = [False, buyPrice, where, forecast]
     sellSignal = [False, sellPrice, where, forecast]
-    priceDiff = [None, None, where, price]
+    priceDiff = [None, None, where, price, date]
     # 买卖价格有效则都有效，无效则都无效
     if buyPrice != INVALID_BUY_PRICE:
       priceDiff[0] = (price - buyPrice) / buyPrice
@@ -905,15 +925,25 @@ class TradeManager:
   baseIndex2 = None  # 自然日index，带了hs300数据，也就是知道那些日子是交易日
   
   # 代表交易管理
-  def __init__(self, stocks, beginMoney):
+  def __init__(self, stocks, beginMoney, endDate=None):
     
     self.startYear = 2011  # 起始年份
     start = str(self.startYear) + '-01-01T00:00:00Z'
     self.startDate = parser.parse(start, ignoretz=True)
+
     self.endYear = 2019  # 结束年份
     # end = str(self.endYear) + '-12-13T00:00:00Z'
     end = str(self.endYear) + '-12-31T00:00:00Z'
     self.endDate = parser.parse(end, ignoretz=True)
+    if endDate is not None:
+      self.endYear = endDate.split('-')[0]
+      self.endDate = parser.parse(endDate, ignoretz=True)
+    else:
+      #运行日
+      now = datetime.now()
+      self.endYear = now.year
+      self.endDate = pd.Timestamp(now.year, now.month, now.day)
+    
     
     # self.MAXEND = Quater2Date(2099, 'first')  # 默认的冻结开仓截止日期
     self.BEGIN_MONEY = beginMoney

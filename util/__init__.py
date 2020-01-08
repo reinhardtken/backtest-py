@@ -340,6 +340,8 @@ def LoadYearPaper(y, code):
     midYear[const.GPFH_KEYWORD.KEY_NAME['CQCXR']] = c[const.GPFH_KEYWORD.KEY_NAME['CQCXR']]
     midYear[const.GPFH_KEYWORD.KEY_NAME['AllocationPlan']] = c[const.GPFH_KEYWORD.KEY_NAME['AllocationPlan']]
     midYear[const.GPFH_KEYWORD.KEY_NAME['EarningsPerShare']] = c[const.GPFH_KEYWORD.KEY_NAME['EarningsPerShare']]
+    tmp = pd.Timestamp(datetime.datetime.strptime(c[const.GPFH_KEYWORD.KEY_NAME['YAGGR']], '%Y-%m-%d'))
+    midYear['date'] = tmp
     break
   else:
     midYear.update({'notExist': 1})
@@ -350,6 +352,8 @@ def LoadYearPaper(y, code):
     year[const.GPFH_KEYWORD.KEY_NAME['CQCXR']] = c[const.GPFH_KEYWORD.KEY_NAME['CQCXR']]
     year[const.GPFH_KEYWORD.KEY_NAME['AllocationPlan']] = c[const.GPFH_KEYWORD.KEY_NAME['AllocationPlan']]
     year[const.GPFH_KEYWORD.KEY_NAME['EarningsPerShare']] = c[const.GPFH_KEYWORD.KEY_NAME['EarningsPerShare']]
+    tmp = pd.Timestamp(datetime.datetime.strptime(c[const.GPFH_KEYWORD.KEY_NAME['YAGGR']], '%Y-%m-%d'))
+    year['date'] = tmp
     break
   else:
     year.update({'notExist': 1})
