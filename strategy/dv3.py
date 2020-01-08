@@ -521,6 +521,7 @@ class StrategyDV:
     self.eventDF = None
     self.dividendMap = {}  # 除权的详细信息，和eventDF配合使用
     self.dangerousQuarterMap = {}  # 危险季报详细信息，和eventDF配合使用
+    
   
   def BuildGenerator(self):
     self.generator['dividendPoint'] = DividendGenerator(self, self.dv2Index.dividendPoint)
@@ -925,19 +926,22 @@ class TradeManager:
   baseIndex2 = None  # 自然日index，带了hs300数据，也就是知道那些日子是交易日
   
   # 代表交易管理
-  def __init__(self, stocks, beginMoney, endDate=None):
+  def __init__(self, stocks, **kwargs):
     
     self.startYear = 2011  # 起始年份
     start = str(self.startYear) + '-01-01T00:00:00Z'
     self.startDate = parser.parse(start, ignoretz=True)
+    if 'startDate' in kwargs:
+      self.startYear = int(kwargs['startDate'].split('-')[0])
+      self.startDate = parser.parse(kwargs['startDate'], ignoretz=True)
+    
 
     self.endYear = 2019  # 结束年份
-    # end = str(self.endYear) + '-12-13T00:00:00Z'
     end = str(self.endYear) + '-12-31T00:00:00Z'
     self.endDate = parser.parse(end, ignoretz=True)
-    if endDate is not None:
-      self.endYear = endDate.split('-')[0]
-      self.endDate = parser.parse(endDate, ignoretz=True)
+    if 'endDate' in kwargs:
+      self.endYear = int(kwargs['endDate'].split('-')[0])
+      self.endDate = parser.parse(kwargs['endDate'], ignoretz=True)
     else:
       #运行日
       now = datetime.now()
@@ -945,8 +949,10 @@ class TradeManager:
       self.endDate = pd.Timestamp(now.year, now.month, now.day)
     
     
-    # self.MAXEND = Quater2Date(2099, 'first')  # 默认的冻结开仓截止日期
-    self.BEGIN_MONEY = beginMoney
+    if 'beginMoney' in kwargs:
+      self.BEGIN_MONEY = kwargs['beginMoney']
+    else:
+      self.BEGIN_MONEY = 50000
     
     self.mongoClient = MongoClient()
     self.stocks = stocks
@@ -967,7 +973,7 @@ class TradeManager:
     self.collectionName = 'all_dv3_'+self.fm.NAME  # 存盘表名
     
     for one in stocks:
-      tmpBeginMoney = beginMoney
+      tmpBeginMoney = self.BEGIN_MONEY
       self.codes.append(one['_id'])
       if 'money' in one:
         tmpBeginMoney = one['money']

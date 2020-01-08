@@ -91,8 +91,12 @@ class DVIndex:
     
     self.dividendAdjust = {}  # 除权日，调整买入卖出价格
     
-    self.statisticsYears = None  # 参与统计的总年数
-    self.dividendYears = 0  # 有过分红的年数
+    # self.statisticsYears = {}  # 参与统计的总年数
+    self.statisticsYearsStart = 0
+    self.statisticsYearsTmp = {}
+    self.statisticsYearsDF = None
+    # self.dividendYears = 0  # 有过分红的年数
+    self.ipoDate = util.IPODate(self.code)
   
   def Run(self):
     
@@ -125,14 +129,21 @@ class DVIndex:
       self.forecast[year]['forth'] = forecast[3]
       
       
-    
-    self.statisticsYears = len(self.checkPoint)
+      
+      
+    if self.ipoDate < self.startDate:
+      #如果比统计区间还早，以统计区间为准
+      self.statisticsYearsStart = self.startDate.year
+    else:
+      #如果是统计区间以后ipo的，ipo为准
+      self.statisticsYearsStart = self.ipoDate.year
+      
     # 对加载出来的数据做初步处理
     for k, v in self.checkPoint.items():
       try:
-        if 'notExist' in v['year'] and 'notExist' in v['midYear']:
-          # 没有查到年报数据的年份，可能是公司就没上市，需要扣减
-          self.statisticsYears -= 1
+        # if 'notExist' in v['year'] and 'notExist' in v['midYear']:
+        #   # 没有查到年报数据的年份，可能是公司就没上市，需要扣减
+        #   self.statisticsYears -= 1
         # 计算分红
         v['midYear']['dividend'] = 0
         v['year']['dividend'] = 0
@@ -142,22 +153,34 @@ class DVIndex:
         # 计算股利支付率，如果这个数字超过100%，则分红不能当真
         try:
           if GPFH_KEY['EarningsPerShare'] in v['year']:
-            v['year']['dividendRatio'] = v['year']['allDividend'] / v['year'][GPFH_KEY['EarningsPerShare']]
+            v['year']['dividendRatio'] = 0
+            try:
+              ### 600661 is zero...
+              v['year']['dividendRatio'] = v['year']['allDividend'] / v['year'][GPFH_KEY['EarningsPerShare']]
+            except Exception as e:
+              util.PrintException(e)
           
           # 计算分红是不是大于每股收益，如果大于每股收益，显然不可持续
           # 002351 漫步者 买入："date" : ISODate("2011-06-17T00:00:00.000Z"),
           # 不可持续的分红，需要调整为实际每股收益的80%来测算
           # 2019/12/26此段逻辑很好的改善了回测中差标的集合的表现
-          if GPFH_KEY['EarningsPerShare'] in v['midYear']:
-            if 0.8 * v['midYear'][GPFH_KEY['EarningsPerShare']] < v['midYear']['dividend']:
-              v['unsustainable'] = True
-              v['midYear']['dividend'] = 0.8 * v['midYear'][GPFH_KEY['EarningsPerShare']]
-              v['year']['allDividend'] = v['midYear']['dividend'] + v['year']['dividend']
-          if GPFH_KEY['EarningsPerShare'] in v['year']:
-            if 0.8 * v['year'][GPFH_KEY['EarningsPerShare']] < v['year']['dividend']:
-              v['unsustainable'] = True
-              v['year']['dividend'] = 0.8 * v['year'][GPFH_KEY['EarningsPerShare']]
-              v['year']['allDividend'] = v['midYear']['dividend'] + v['year']['dividend']
+          try:
+            if GPFH_KEY['EarningsPerShare'] in v['midYear']:
+              if 0.8 * v['midYear'][GPFH_KEY['EarningsPerShare']] < v['midYear']['dividend']:
+                v['unsustainable'] = True
+                v['midYear']['dividend'] = 0.8 * v['midYear'][GPFH_KEY['EarningsPerShare']]
+                v['year']['allDividend'] = v['midYear']['dividend'] + v['year']['dividend']
+          except Exception as e:
+            util.PrintException(e)
+          
+          try:
+            if GPFH_KEY['EarningsPerShare'] in v['year']:
+              if 0.8 * v['year'][GPFH_KEY['EarningsPerShare']] < v['year']['dividend']:
+                v['unsustainable'] = True
+                v['year']['dividend'] = 0.8 * v['year'][GPFH_KEY['EarningsPerShare']]
+                v['year']['allDividend'] = v['midYear']['dividend'] + v['year']['dividend']
+          except Exception as e:
+            util.PrintException(e)
         except Exception as e:
           if v['year'][GPFH_KEY['EarningsPerShare']] == '-':
             v['year'][GPFH_KEY['EarningsPerShare']] = 0
@@ -166,7 +189,7 @@ class DVIndex:
         # allDividend影响下一年
         if v['year']['allDividend'] > 0:
           # 统计分红过的年数
-          self.dividendYears += 1
+          self.statisticsYearsTmp[k] = True
           self.checkPoint[k + 1]['buyPrice'] = v['year']['allDividend'] / BUY_PERCENT
           self.checkPoint[k + 1]['sellPrice'] = v['year']['allDividend'] / SELL_PERCENT
         else:
@@ -187,7 +210,28 @@ class DVIndex:
         self.ProcessQuarterPaper(k, 'third')
         self.ProcessQuarterPaper(k, 'forth')
       except KeyError as e:
-        print(e)
+        util.PrintException(e)
+    
+    
+    #统计到N年的累计分红年数和分红率
+    acc = 0
+    tmp = []
+    tmpIndex = []
+    for year in range(self.statisticsYearsStart, stopYear + 1):
+      if year in self.statisticsYearsTmp:
+        acc += 1
+      tmpIndex.append(year)
+      tmp.append({'acc': acc, 'percent': acc/(year-self.statisticsYearsStart+1), 'roll5': 0})
+    self.statisticsYearsDF = pd.DataFrame(data=tmp, index=tmpIndex)
+    #计算滚动5年累计分红
+    for year, row in self.statisticsYearsDF.iterrows():
+      if year+5 in self.statisticsYearsDF.index:
+        self.statisticsYearsDF.loc[year+5, 'roll5'] = \
+          self.statisticsYearsDF.loc[year+5, 'acc'] - self.statisticsYearsDF.loc[year, 'acc']
+      else:
+        break
+    # tmp = self.statisticsYearsDF.to_dict('index')
+    # self.statisticsYearsDF[['acc', 'percent']].fillna(method='ffill', inplace=True)
     
     # 针对dangerousPoint清理dividendPoint
     tmp = []

@@ -24,9 +24,7 @@ from comm import Priority
 from comm import Task
 
 
-
-#过滤分红年数不符合要求的标的
-#过滤标准是2011~2019年中的累计分红
+# 静态过滤自上市以来分红不超过5年的
 def Filter(stocks):
   inSet = set()
   outSet = set()
@@ -36,15 +34,17 @@ def Filter(stocks):
       codes = stocks
     elif isinstance(tmp, dict):
       codes = list(map(lambda x: x['_id'], stocks))
-      
+
     client = MongoClient()
-    db = client["stock_statistcs"]
-    collection = db["dvYears"]
-    cursor = collection.find({'_id': {'$in': codes}})
-    for one in cursor:
-      if one['统计年数'] >= 5 and one['百分比'] >= 0.8:
-        inSet.add(one['_id'])
-      else:
-        outSet.add(one['_id'])
-        
+    db = client["stock_statistcs_dvYears"]
+    for one in codes:
+      collection = db[one]
+      cursor = collection.find().sort([('_id', -1)]).limit(1)
+      for c in cursor:
+        if c['acc'] >= 5:
+          inSet.add(one)
+        else:
+          outSet.add(one)
+        break
+  
   return list(inSet), list(outSet)

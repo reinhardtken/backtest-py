@@ -14,6 +14,7 @@ import const
 import util
 from filter import dvYear
 from filter import hs300
+import tools
 
 # this project
 if __name__ == '__main__':
@@ -217,6 +218,8 @@ def CalcDVAll():
   
   strategy.dv1.CalcDV(out)
   
+  
+  
 
 
 def HoldAll():
@@ -336,6 +339,24 @@ if __name__ == '__main__':
 
   start = '2011-01-01T00:00:00Z'
   end = '2019-12-31T00:00:00Z'
+
+  out = []
+  client = MongoClient()
+  db = client["stock_backtest"]
+  # collection = db["all_dv3"]
+  collection = db["dv2"]
+  cursor = collection.find({'tradeCounter': {'$gte': 1}})
+  # cursor = collection.find()
+  for one in cursor:
+    # print(one)
+    out.append({'_id': one['_id'], 'name': one['name'], 'percent': one['percent'],
+                'holdStockNatureDate': one['holdStockNatureDate'],
+                'tradeCounter': one['tradeCounter']})
+  
+  # tools.DoAction(out, tools.CalcDV)
+  # tools.CalcDVAll()
+  tools.CalcDV([{'_id': '600015', 'name': '华能水电', },
+                {'_id': '000895', 'name': '格力电器', },])
   # df = ts.get_deposit_rate()
   # print(df)
   # hold.CalcHoldTime(stockList.VERSION_DV1.GOOD_LIST, 'dv2', start, end)
@@ -482,8 +503,8 @@ if __name__ == '__main__':
   #save
   # TestThree(VERIFY_CODES, 100000, {'check': True, 'backtest': True, 'save': False})
   # TestThree(stockList.VERSION_DV2.TOP30_LIST, 100000, {'check': True, 'backtest': True, 'save': False})
-  TestThree(stockList.VERSION_DV2.BOTTOM30_LIST, 100000,
-            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
+  # TestThree(stockList.VERSION_DV2.BOTTOM30_LIST, 100000,
+  #           {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
   
   # tmp = stockList.VERSION_DV2.TOP30_LIST
   # tmp.extend(stockList.VERSION_DV2.BOTTOM30_LIST)
@@ -501,4 +522,4 @@ if __name__ == '__main__':
 
   
   # strategy.dv1.Digest('all_dv1',   {"$where": "this.percent > this.hs300Profit"})
-  #TODO 周末研究下怎么画图，把入出点放在图形上，更直观，hs300，股价，收益曲线
+  

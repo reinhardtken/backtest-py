@@ -174,6 +174,16 @@ def QueryAll():
     return None
   
   
+def QueryAllCode():
+  codes = []
+  df = QueryAll()
+  for code, row in df.iterrows():
+    codes.append({'_id': code, 'name': row['名称']})
+  
+  return codes
+  
+  
+  
 def PrintException(e):
   msg = traceback.format_exc()
   print(msg)
@@ -392,3 +402,23 @@ def ForecastString2Int(info):
     return infos[info]
   else:
     return -5
+  
+  
+def String2pdTimestamp(d, format='%Y-%m-%d'):
+  return pd.Timestamp(datetime.datetime.strptime(d, format))
+  
+  
+def IPODate(code):
+  client = MongoClient()
+  db = client['stock']
+  collection = db['stock_list']
+  
+  out = []
+  
+  cursor = collection.find({'_id': code})
+  for c in cursor:
+    return String2pdTimestamp(str(c['上市日期']), '%Y%m%d')
+  
+
+  return None
+    

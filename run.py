@@ -14,17 +14,17 @@ import const
 import util
 from filter import dvYear
 from filter import hs300
-
+from filter import ipoYear
+from filter import dvYearAll
 # this project
-if __name__ == '__main__':
-  import sys
+
 
 
 #########################################################
 def TestThree(codes, beginMoney, args):
   import strategy.dv3
   
-  stock = strategy.dv3.TradeManager(codes, beginMoney)
+  stock = strategy.dv3.TradeManager(codes, beginMoney=beginMoney)
   stock.LoadQuotations()
   stock.LoadIndexs()
   stock.Merge()
@@ -67,9 +67,10 @@ def RunHS300AndDVYears():
                 'holdStockNatureDate': one['holdStockNatureDate'],
                 'tradeCounter': one['tradeCounter']})
   
-  inList, outList = dvYear.Filter(out)
+  inList, outList = dvYearAll.Filter(out)
   in2, out2 = hs300.Filter(inList)
-  in3, out3 = hs300.Filter(outList)
+  # in3, out3 = hs300.Filter(outList)
+  in3, out3 = ipoYear.Filter(in2)
   
   for one in out:
     if one['_id'] in out2:
