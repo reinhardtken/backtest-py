@@ -22,57 +22,6 @@ if __name__ == '__main__':
   
  
 #########################################################
-def TestOne(code, beginMoney, name, save=False, check=False):
-  import strategy.dv1
-  stock = strategy.dv1.TradeUnit(code, name, beginMoney)
-  stock.LoadQuotations()
-  stock.LoadIndexs()
-  stock.Merge()
-  stock.CheckPrepare()
-
-  print(stock.DV.checkPoint)
-  print(stock.DV.dangerousPoint)
-  for one in stock.DV.dividendPoint:
-    print(one)
-  
-  stock.BackTest()
-  stock.CloseAccount()
-  if save:
-    stock.Store2DB()
-    
-  if check:
-    assert stock.CheckResult()
-  # print(stock.checkPoint)
-  # print(stock.dangerousPoint)
-  # print(stock.dividendPoint)
-  return stock
-
-
-def TestTwo(codes, beginMoney, args):
-  import strategy.dv2
-  
-  stock = strategy.dv2.TradeManager(codes, beginMoney)
-  stock.LoadQuotations()
-  stock.LoadIndexs()
-  stock.Merge()
-  stock.CheckPrepare()
-  
-  if 'saveprepare' in args and args['saveprepare']:
-    stock.StorePrepare2DB()
-    
-  if 'backtest' in args and args['backtest']:
-    stock.BackTest()
-    stock.CloseAccount()
-    
-  if 'save' in args and args['save']:
-    stock.StoreResult2DB()
-  
-  if 'check' in args and args['check']:
-    assert stock.CheckResult()
-  # print(stock.checkPoint)
-  # print(stock.dangerousPoint)
-  # print(stock.dividendPoint)
-  return stock
 
 
 def TestThree(codes, beginMoney, args):
@@ -340,6 +289,52 @@ if __name__ == '__main__':
   start = '2011-01-01T00:00:00Z'
   end = '2019-12-31T00:00:00Z'
 
+  df = pd.read_excel(r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx', dtype=str)
+  out = df.to_dict('list')
+  all = set()
+  for k, v in out.items():
+    for one in v:
+      try:
+        if len(one) == 6:
+          tmp = one
+        else:
+          tmp = '{:06}'.format(int(one))
+        all.add(tmp)
+      except Exception as e:
+        util.PrintException(e)
+  print(all)
+  
+  allCodes = util.QueryAll()
+  out = []
+  for k, row in allCodes.iterrows():
+    if k in all:
+      out.append({'_id': k, 'name': row['名称']})
+  util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
+  # df = pd.read_excel(r'C:\workspace\tmp\base.xlsx')
+  # base = set()
+  # for k, v in df.iterrows():
+  #   tmp = '{:06}'.format(v['code'])
+  #   base.add(tmp)
+  #
+  # df = pd.read_excel(r'C:\workspace\tmp\in.xlsx')
+  # inSet = set()
+  # for k, v in df.iterrows():
+  #   tmp = '{:06}'.format(v['code'])
+  #   inSet.add(tmp)
+  #
+  # df = pd.read_excel(r'C:\workspace\tmp\out.xlsx')
+  # outSet = set()
+  # for k, v in df.iterrows():
+  #   tmp = '{:06}'.format(v['code'])
+  #   outSet.add(tmp)
+  #
+  # print('base in out {} {} {}'.format(len(base), len(inSet), len(outSet)))
+  # newOne = base.difference(outSet)
+  # final = newOne.union(inSet)
+  # print('new final {} {} '.format(len(newOne), len(final)))
+  # for one in final:
+  #   # print("'{}',".format(one))
+  #   print(one)
   # out = []
   # client = MongoClient()
   # db = client["stock_backtest"]
@@ -354,7 +349,7 @@ if __name__ == '__main__':
   #               'tradeCounter': one['tradeCounter']})
   #
   # # tools.DoAction(out, tools.CalcDV)
-  tools.CalcDVAll()
+  # tools.CalcDVAll()
   # tools.CalcDV([{'_id': '600015', 'name': '华能水电', },
   #               {'_id': '000895', 'name': '格力电器', },])
   # df = ts.get_deposit_rate()

@@ -1028,9 +1028,8 @@ class TradeManager:
         # pb = self.loadPB()
         # if pb is not None:
         #   self.mergeData = self.mergeData.join(pb, how='left')
-        pass
       except Exception as e:
-        pass
+        util.PrintException(e)
       # 填充股票的空值，但是不处理沪深300指数的空值
       for one in self.codes:
         self.mergeData[one].fillna(method='ffill', inplace=True)
