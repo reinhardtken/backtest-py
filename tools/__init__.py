@@ -93,3 +93,12 @@ def AllHS300Code2DB(path):
   
   print(notInAll)
   util.SaveMongoDBDict(out2, 'stock_codeList', 'allHS300Detail')
+  
+  
+def LastSignal2File(collectionName, path):
+  df = util.LoadData('stock_backtest', collectionName,
+                     condition={'priceFromDate': {"$exists": True}},
+                     sort=[('priceBuy', 1)])
+  # db.getCollection('all_dv3').find({'priceFromDate': {"$exists": true}},
+  #                                  {'_id': 1, 'name': 1, 'priceBuy': 1, 'priceSell': 1}).sort({'priceBuy': 1})
+  df.loc[:, ['_id', 'name', 'priceBuy', 'priceFrom', 'priceSell', 'priceFromDate', 'priceWhere']].to_excel(path)

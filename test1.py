@@ -14,6 +14,9 @@ import const
 import util
 from filter import dvYear
 from filter import hs300
+from filter import ipoYear
+from filter import dvYearAll
+from filter import hs300All
 import tools
 
 # this project
@@ -198,29 +201,21 @@ def RunHS300AndDVYears():
                 'holdStockNatureDate': one['holdStockNatureDate'],
                 'tradeCounter': one['tradeCounter']})
 
-  inList, outList = dvYear.Filter(out)
-  in2, out2 = hs300.Filter(inList)
-  in3, out3 = hs300.Filter(outList)
+  filter = [
+    dvYearAll.Filter,
+    # dvYear.Filter,
+    # hs300All.Filter,
+    # hs300.Filter,
+    ipoYear.Filter,
+  ]
+  inData = out
+  for one in filter:
+    inData, _ = one(inData)
 
-  for one in out:
-    if one['_id'] in out2:
-      print('not hs300 {} {}'.format(one['_id'], one['name']))
-
-  for one in out:
-    if one['_id'] in in3:
-      print('not dvYear {} {}'.format(one['_id'], one['name']))
-
+  tmp = set(inData)
   codes = []
   for one in out:
-    if one['_id'] in in2:
-      codes.append(one)
-
-  for one in stockList.VERSION_DV2.DVOK_NOT_HS300:
-    if one['_id'] not in in2:
-      codes.append(one)
-
-  for one in stockList.VERSION_DV2.HS300_NOT_DVOK:
-    if one['_id'] not in in2:
+    if one['_id'] in tmp:
       codes.append(one)
 
   TestThree(codes, 100000,
@@ -291,6 +286,7 @@ if __name__ == '__main__':
   # end = '2019-12-31T00:00:00Z'
   # print(dir(setting))
   print(setting.WHO)
+  # tools.LastSignal2File('all_dv3', r'C:\workspace\tmp\signal.xlsx')
   # tools.AllHS300Code2DB(r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx')
   
   # df = pd.read_excel(r'C:\workspace\tmp\base.xlsx')
@@ -369,7 +365,7 @@ if __name__ == '__main__':
   #   codes.append({'_id': code, 'name': row['名称']})
   #
   # strategy.dv3.CalcDV(codes)
-  RunHS300AndDVYears()
+  # RunHS300AndDVYears()
   # #
   # # #每次100个
   # for index in range(180, len(codes), 100):
@@ -434,24 +430,24 @@ if __name__ == '__main__':
 
   
 
-  # TestThree(
-  #         # [
-  #         #   {'_id': '600025', 'name': '华能水电', },
-  #         #   {'_id': '601166', 'name': '兴业银行', 'money': 90205},
-  #         #   {'_id': '600900', 'name': '长江电力', 'money': 63905},
-  #         #  ],
-  #   [
-  #     # {'name': '东风股份', '_id': '601515', 'money': 133705},
-  #     {'name': '泸州老窖', '_id': '000651', 'money': 52105},
-  #     # {'name': '重庆水务', '_id': '601158', 'money': 58105},
-  #     # {'name': '浦发银行', '_id': '600000', 'money': 74505},
-  #     # {'name': '万科', '_id': '000002', 'money': 72705},
-  #     # {'name': '宝钢股份', '_id': '600019', 'money': 70705},
-  #     # {'name': '中国石化', '_id': '600028', 'money': 74405},
-  #     # {'name': '双汇发展', '_id': '000895', 'money': 211205},
-  #     #  {'name': '伟星股份', '_id': '002003', 'money': 80805},
-  #   ],
-  #   100000, {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
+  TestThree(
+          # [
+          #   {'_id': '600025', 'name': '华能水电', },
+          #   {'_id': '601166', 'name': '兴业银行', 'money': 90205},
+          #   {'_id': '600900', 'name': '长江电力', 'money': 63905},
+          #  ],
+    [
+      # {'name': '东风股份', '_id': '601515', 'money': 133705},
+      {'name': '格力电器', '_id': '000651', 'money': 52105},
+      # {'name': '重庆水务', '_id': '601158', 'money': 58105},
+      # {'name': '浦发银行', '_id': '600000', 'money': 74505},
+      # {'name': '万科', '_id': '000002', 'money': 72705},
+      # {'name': '宝钢股份', '_id': '600019', 'money': 70705},
+      # {'name': '中国石化', '_id': '600028', 'money': 74405},
+      # {'name': '双汇发展', '_id': '000895', 'money': 211205},
+      #  {'name': '伟星股份', '_id': '002003', 'money': 80805},
+    ],
+    100000, {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
   
   # test
   # TestAll(CODE_AND_MONEY, True, False)

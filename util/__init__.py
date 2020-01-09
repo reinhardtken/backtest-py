@@ -470,3 +470,10 @@ def CurrentOS():
     return 'linux'
   else:
     return 'win'
+  
+  
+def StocksDict2Set(codes):
+  tmp = set()
+  for one in codes:
+    tmp.add(one['_id'])
+  return tmp

@@ -144,3 +144,13 @@ class HS300:
   
 TASK_BROADCAST = 1
 TASK_CHAIN = 2
+
+
+class CONFIG:
+  FORECAST='forecast'
+  CALC_DVYEAR = 'calcDVYear'
+  
+  STRATEGE = 'strategy'
+  # DYNAMIC_FILTER = 'dynamicFilter'
+  # DYNAMIC_FILTER_DVYEAR = 'dvYear'
+  # DYNAMIC_FILTER_HS300 = 'hs300'

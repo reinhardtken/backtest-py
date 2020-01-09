@@ -36,11 +36,13 @@ from fund_manage import fm4
 from fund_manage import fm5
 from fund_manage import fm6
 from fund_manage import fm7
+from fund_manage import fm8
 
 import dynamicFilter.dvYear
 import dynamicFilter.hs300
 
 Message = const.Message
+CONFIG = const.CONFIG
 
 # this project
 if __name__ == '__main__':
@@ -331,6 +333,14 @@ class Account:
       out['total'] = totalMoney
       out['cash'] = cash
       out['marketValue'] = marketValue
+      out['oldPrice'] = self.oldPrice
+      out['buyDate'] = self.holdStockDateVec[-1]
+      out['number'] = self.number
+      out['winLoss'] = (current.price-self.oldPrice)*self.number*100
+      if self.priceDiff is not None:
+        out['priceBuy'] = self.priceDiff[0]
+        out['priceSell'] = self.priceDiff[1]
+        out['priceFrom'] = self.priceDiff[3]
     return out
   
   
@@ -505,7 +515,14 @@ class DangerousGenerator:
 
 #########################################################
 class StrategyDV:
-  def __init__(self, code, name, tu, startYear, startDate, endDate):
+  def __init__(self, code, name, tu, startYear, startDate, endDate, **kwargs):
+    self.kwargs = kwargs
+    self.kwargs = kwargs
+    if 'config' in kwargs and CONFIG.STRATEGE in kwargs['config']:
+      self.config = kwargs['config'][CONFIG.STRATEGE]
+    else:
+      self.config = {}
+      
     self.strategyName = 'dv2'
     self.code = code
     self.name = name
@@ -602,7 +619,7 @@ class StrategyDV:
   
   def CheckPrepare(self):
     print('### {} CheckPrepare########'.format(self.code))
-    self.dv2Index.Run()
+    self.dv2Index.Run(self.config)
     #加载累计分红数据
     # self.accDividend = util.LoadData('stock_statistcs_dvYears', self.code)
     # 根据分析数据生成eventDF
@@ -705,32 +722,32 @@ class StrategyDV:
 
 
   def forecast2DF(self):
-  
-    for year in range(self.startDate.year, self.endDate.year + 1):
-
-      anchor0 = pd.Timestamp(datetime(year+1, 3, 31))
-      anchor1 = pd.Timestamp(datetime(year, 6, 30))
-      anchor2 = pd.Timestamp(datetime(year, 9, 30))
-      anchor3 = pd.Timestamp(datetime(year, 12, 31))
-      if 'date' in self.dv2Index.forecast[year]['first']:
-        date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['first']['date'], '%Y-%m-%d'))
-        value = util.ForecastString2Int(self.dv2Index.forecast[year]['first']['forecast'])
-        self.eventDF.loc[date:anchor1, 'forecast'] = value
-        
-      if 'date' in self.dv2Index.forecast[year]['second']:
-        date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['second']['date'], '%Y-%m-%d'))
-        value = util.ForecastString2Int(self.dv2Index.forecast[year]['second']['forecast'])
-        self.eventDF.loc[date:anchor2, 'forecast'] = value
-        
-      if 'date' in self.dv2Index.forecast[year]['third']:
-        date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['third']['date'], '%Y-%m-%d'))
-        value = util.ForecastString2Int(self.dv2Index.forecast[year]['third']['forecast'])
-        self.eventDF.loc[date:anchor3, 'forecast'] = value
-        
-      if 'date' in self.dv2Index.forecast[year]['forth']:
-        date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['forth']['date'], '%Y-%m-%d'))
-        value = util.ForecastString2Int(self.dv2Index.forecast[year]['forth']['forecast'])
-        self.eventDF.loc[date:anchor0, 'forecast'] = value
+    pass
+    # for year in range(self.startDate.year, self.endDate.year + 1):
+    #
+    #   anchor0 = pd.Timestamp(datetime(year+1, 3, 31))
+    #   anchor1 = pd.Timestamp(datetime(year, 6, 30))
+    #   anchor2 = pd.Timestamp(datetime(year, 9, 30))
+    #   anchor3 = pd.Timestamp(datetime(year, 12, 31))
+    #   if 'date' in self.dv2Index.forecast[year]['first']:
+    #     date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['first']['date'], '%Y-%m-%d'))
+    #     value = util.ForecastString2Int(self.dv2Index.forecast[year]['first']['forecast'])
+    #     self.eventDF.loc[date:anchor1, 'forecast'] = value
+    #
+    #   if 'date' in self.dv2Index.forecast[year]['second']:
+    #     date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['second']['date'], '%Y-%m-%d'))
+    #     value = util.ForecastString2Int(self.dv2Index.forecast[year]['second']['forecast'])
+    #     self.eventDF.loc[date:anchor2, 'forecast'] = value
+    #
+    #   if 'date' in self.dv2Index.forecast[year]['third']:
+    #     date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['third']['date'], '%Y-%m-%d'))
+    #     value = util.ForecastString2Int(self.dv2Index.forecast[year]['third']['forecast'])
+    #     self.eventDF.loc[date:anchor3, 'forecast'] = value
+    #
+    #   if 'date' in self.dv2Index.forecast[year]['forth']:
+    #     date = pd.Timestamp(datetime.strptime(self.dv2Index.forecast[year]['forth']['date'], '%Y-%m-%d'))
+    #     value = util.ForecastString2Int(self.dv2Index.forecast[year]['forth']['forecast'])
+    #     self.eventDF.loc[date:anchor0, 'forecast'] = value
         
         
   
@@ -815,7 +832,12 @@ class TradeManager:
   
   # 代表交易管理
   def __init__(self, stocks, **kwargs):
-    
+    self.kwargs = kwargs
+    if 'config' in kwargs:
+      self.config = kwargs['config']
+    else:
+      self.config = {}
+      
     self.startYear = 2011  # 起始年份
     start = str(self.startYear) + '-01-01T00:00:00Z'
     self.startDate = parser.parse(start, ignoretz=True)
@@ -856,12 +878,13 @@ class TradeManager:
     
     self.codes = []  # 单独存放所有的股票代码
     self.listen = {}  # ListenOne
-    self.fm = fm6.FundManager(stocks, self, self.startDate, self.endDate) #资金管理
+    self.fm = fm8.FundManager(stocks, self, self.startDate, self.endDate) #资金管理
     self.contextManager.AddStageCallback(Message.STAGE_FUND_MANAGE, self.fm.StageChange)
 
     self.collectionName = 'all_dv3_'+self.fm.NAME  # 存盘表名
     
     #沪深300动态过滤
+
     hs300Set = dynamicFilter.hs300.Filter()
     
     for one in stocks:
@@ -870,7 +893,7 @@ class TradeManager:
       if 'money' in one:
         tmpBeginMoney = one['money']
       A = Account(one['_id'], one['name'], tmpBeginMoney, self.startDate, self.endDate, self.fm)
-      DV = StrategyDV(one['_id'], one['name'], self, self.startYear, self.startDate, self.endDate)
+      DV = StrategyDV(one['_id'], one['name'], self, self.startYear, self.startDate, self.endDate, **self.kwargs)
       self.dvMap[one['_id']] = DV
       self.accountMap[one['_id']] = A
       context = DayContext(one['_id'])
@@ -901,10 +924,10 @@ class TradeManager:
       #   Message.NEW_MONTH,
       #   Message.SUGGEST_BUY_EVENT,
       # ], hs300Set.Process)
-      #
-      # context.pump.AddHandler([
-      #   Message.SUGGEST_BUY_EVENT,
-      # ], dvYearTmp.Process)
+
+      context.pump.AddHandler([
+        Message.SUGGEST_BUY_EVENT,
+      ], dvYearTmp.Process)
       
       context.pump.AddHandler([
         Message.NEW_DAY,
