@@ -38,6 +38,7 @@ from fund_manage import fm6
 from fund_manage import fm7
 
 import dynamicFilter.dvYear
+import dynamicFilter.hs300
 
 Message = const.Message
 
@@ -92,6 +93,7 @@ class DayContext:
   def __init__(self, code):
     self.code = code
     self.year = None
+    self.month = None
     self.date = None
     self.index = None
     self.price = None
@@ -109,9 +111,18 @@ class DayContext:
   
   def AddTask(self, task:Task):
     self.pump.AddTask(task)
-  
+    
+    
   def NewDay(self, date, row):
+    if self.year != date.year or self.month != date.month:
+      self.AddTask(
+        Task(
+          Priority(
+            Message.STAGE_STRATEGY, Message.PRIORITY_NEW_DAY),
+          Message.NEW_MONTH))
+      
     self.year = date.year
+    self.month = date.month
     self.date = date
     self.price = row[self.code]
     self.index = row['close']
@@ -850,6 +861,9 @@ class TradeManager:
 
     self.collectionName = 'all_dv3_'+self.fm.NAME  # 存盘表名
     
+    #沪深300动态过滤
+    hs300Set = dynamicFilter.hs300.Filter()
+    
     for one in stocks:
       tmpBeginMoney = self.BEGIN_MONEY
       self.codes.append(one['_id'])
@@ -880,10 +894,17 @@ class TradeManager:
 
       #此处注意顺序
 
-      tmp = dynamicFilter.dvYear.Filter(one['_id'])
-      context.pump.AddHandler([
-        Message.SUGGEST_BUY_EVENT,
-      ], tmp.Process)
+      dvYearTmp = dynamicFilter.dvYear.Filter(one['_id'])
+
+      
+      # context.pump.AddHandler([
+      #   Message.NEW_MONTH,
+      #   Message.SUGGEST_BUY_EVENT,
+      # ], hs300Set.Process)
+      #
+      # context.pump.AddHandler([
+      #   Message.SUGGEST_BUY_EVENT,
+      # ], dvYearTmp.Process)
       
       context.pump.AddHandler([
         Message.NEW_DAY,

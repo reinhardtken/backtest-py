@@ -117,7 +117,7 @@ class FundManager:
     self.dfM.drop(['willDrop', ], axis=1, inplace=True)
     
     self.quarterDetail = {}
-    self.lastAccDivedendNegative = {} #记录因为分红不合格丢弃的开仓动作
+    # self.lastAccDivedendNegative = {} #记录因为分红不合格丢弃的开仓动作
   
   
   def gather(self, date, df, maxAndRetracement, month):

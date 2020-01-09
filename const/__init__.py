@@ -27,6 +27,8 @@ class Message:
   NEW_DAY = 12
   
   PRICE_DIFF = 13
+
+  NEW_MONTH = 14
   
   
   # STAGE_STRATEGY_BEGIN = 1000

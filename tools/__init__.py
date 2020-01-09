@@ -80,7 +80,7 @@ def AllHS300Code2DB(path):
     if k in all:
       out.append({'_id': k, 'name': row['名称']})
     code2Map[k] = {'_id': k, 'name': row['名称']}
-  # util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
+  util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
   
   notInAll = set()
   for k, v in out2.items():
