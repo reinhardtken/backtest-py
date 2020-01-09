@@ -4,6 +4,7 @@
 import datetime
 import re
 import traceback
+import sys
 
 # thirdpart
 import pandas as pd
@@ -142,7 +143,7 @@ def SaveMongoDBDict(data: dict, dbName, collectionName, insert=True):
   print('leave SaveMongoDBDict')
 
   
-def QueryHS300All():
+def QueryHS300():
   client = MongoClient()
   db = client['stock']
   collection = db['hs300_stock_list']
@@ -160,6 +161,24 @@ def QueryHS300All():
   else:
     return None
   
+#历史上所有属于沪深300的票
+def QueryHS300All():
+  client = MongoClient()
+  db = client['stock_codeList']
+  collection = db['allHS300']
+
+  out = []
+
+  cursor = collection.find()
+  for c in cursor:
+    out.append(c)
+
+  if len(out):
+    df = pd.DataFrame(out)
+    df.set_index('_id', inplace=True)
+    return df
+  else:
+    return None
   
 
 def QueryCodeList():
@@ -444,4 +463,10 @@ def IPODate(code):
   
 
   return None
-    
+  
+  
+def CurrentOS():
+  if sys.platform == 'linux':
+    return 'linux'
+  else:
+    return 'win'

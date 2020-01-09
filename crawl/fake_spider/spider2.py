@@ -6,6 +6,7 @@ import pyquery
 
 from selenium import webdriver
 import setting
+import util
 
 
 # CHROME_DRIVER_PATH = r'/home/ken/prog/chromedriver_linux64/chromedriver'
@@ -89,7 +90,7 @@ class FakeSpider():
     
       else:
         client = None
-        if setting.currentOS() == 'linux':
+        if util.CurrentOS() == 'linux':
           # headless
           options = webdriver.ChromeOptions()
           options.add_argument('headless')

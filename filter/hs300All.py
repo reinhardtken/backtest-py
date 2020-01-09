@@ -34,8 +34,8 @@ def Filter(stocks):
       codes = stocks
     elif isinstance(tmp, dict):
       codes = list(map(lambda x: x['_id'], stocks))
-
-    hs300 = util.QueryHS300()
+    
+    hs300 = util.QueryHS300All()
     for one in codes:
       if one in hs300.index:
         inSet.add(one)

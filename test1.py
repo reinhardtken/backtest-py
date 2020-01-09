@@ -282,34 +282,17 @@ if __name__ == '__main__':
   import strategy.dv1
   import strategy.dv2
   import strategy.dv3
+  import setting
   from const import stockList
   from fund_manage import hold
-  VERIFY_CODES = stockList.VERIFY_CODES
-
-  start = '2011-01-01T00:00:00Z'
-  end = '2019-12-31T00:00:00Z'
-
-  df = pd.read_excel(r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx', dtype=str)
-  out = df.to_dict('list')
-  all = set()
-  for k, v in out.items():
-    for one in v:
-      try:
-        if len(one) == 6:
-          tmp = one
-        else:
-          tmp = '{:06}'.format(int(one))
-        all.add(tmp)
-      except Exception as e:
-        util.PrintException(e)
-  print(all)
+  # VERIFY_CODES = stockList.VERIFY_CODES
+  #
+  # start = '2011-01-01T00:00:00Z'
+  # end = '2019-12-31T00:00:00Z'
+  # print(dir(setting))
+  print(setting.WHO)
+  # tools.AllHS300Code2DB(r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx')
   
-  allCodes = util.QueryAll()
-  out = []
-  for k, row in allCodes.iterrows():
-    if k in all:
-      out.append({'_id': k, 'name': row['名称']})
-  util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
   # df = pd.read_excel(r'C:\workspace\tmp\base.xlsx')
   # base = set()
   # for k, v in df.iterrows():
@@ -386,7 +369,7 @@ if __name__ == '__main__':
   #   codes.append({'_id': code, 'name': row['名称']})
   #
   # strategy.dv3.CalcDV(codes)
-  # RunHS300AndDVYears()
+  RunHS300AndDVYears()
   # #
   # # #每次100个
   # for index in range(180, len(codes), 100):

@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 from pymongo import MongoClient
-
+import setting
 
 
 
@@ -73,6 +73,9 @@ if __name__ == '__main__':
     
   #计算全部股票的累计分红
   tools.CalcDVAll()
+  
+  #历史所有沪深300股票入库
+  tools.AllHS300Code2DB(setting.PATH.ALLHS300_STOCKLIST)
   
   #导入历年沪深300成分股
 

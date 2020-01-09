@@ -47,3 +47,26 @@ def DoAction(codes, action, size=100):
   if index < len(codes):
     tmp = codes[index:]
     action(tmp)
+########################################################
+def AllHS300Code2DB(path):
+  df = pd.read_excel(path, dtype=str)
+  out = df.to_dict('list')
+  all = set()
+  for k, v in out.items():
+    for one in v:
+      try:
+        if len(one) == 6:
+          tmp = one
+        else:
+          tmp = '{:06}'.format(int(one))
+        all.add(tmp)
+      except Exception as e:
+        util.PrintException(e)
+  print(all)
+  
+  allCodes = util.QueryAll()
+  out = []
+  for k, row in allCodes.iterrows():
+    if k in all:
+      out.append({'_id': k, 'name': row['名称']})
+  util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
