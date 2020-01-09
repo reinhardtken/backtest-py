@@ -93,7 +93,7 @@ class FundManager:
       self.eventCache[context] = Task(
           Priority(
             Message.STAGE_BUY_TRADE, Message.PRIORITY_BUY),
-          Message.BUY_EVENT, None, *task.args)
+          Message.BUY_EVENT, None, const.TASK_BROADCAST, *task.args)
       # context.AddTask(
       #   Task(
       #     Priority(

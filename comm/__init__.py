@@ -26,9 +26,11 @@ class Priority:
     return self.value < other.value
 
 class Task:
-  def __init__(self, priority, key, util=None, *args, **kwargs):
+  
+  def __init__(self, priority, key, util=None, kind=const.TASK_BROADCAST, *args, **kwargs):
     self.priority = priority
     self.key = key
+    self.kind = kind
     self.util = util
     self.args = args
     self.kwargs = kwargs
@@ -112,8 +114,16 @@ class Pump:
           continue
           
         if task.key in self.handler:
-          for handler in self.handler[task.key]:
-            handler(self.context, task)
+          if task.kind == const.TASK_BROADCAST:
+            #广播
+            for handler in self.handler[task.key]:
+              handler(self.context, task)
+          else:
+            #链式派发
+            for handler in self.handler[task.key]:
+              jump = handler(self.context, task)
+              if jump:
+                break
         
         if task.jump is not None:
           self.jump = task.jump
@@ -145,78 +155,7 @@ class PumpManager:
     
   def Before(self, context):
     pass
-    # 永久有效
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_STRATEGY, Message.PRIORITY_STAGE_STRATEGY_BEGIN),
-    #     Message.STAGE_STRATEGY_BEGIN,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_STRATEGY_BEGIN] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_STRATEGY, Message.PRIORITY_STAGE_STRATEGY_END),
-    #     Message.STAGE_STRATEGY_END,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_STRATEGY_END] = 0
-    #
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_BEFORE_TRADE, Message.PRIORITY_STAGE_BEFORE_TRADE_BEGIN),
-    #     Message.STAGE_BEFORE_TRADE_BEGIN,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_BEFORE_TRADE_BEGIN] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_BEFORE_TRADE, Message.PRIORITY_STAGE_BEFORE_TRADE_END),
-    #     Message.STAGE_BEFORE_TRADE_END,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_BEFORE_TRADE_END] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_SELL_TRADE, Message.PRIORITY_STAGE_SELL_TRADE_BEGIN),
-    #     Message.STAGE_SELL_TRADE_BEGIN,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_SELL_TRADE_BEGIN] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_SELL_TRADE, Message.PRIORITY_STAGE_SELL_TRADE_END),
-    #     Message.STAGE_SELL_TRADE_END,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_SELL_TRADE_END] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_BUY_TRADE, Message.PRIORITY_STAGE_BUY_TRADE_BEGIN),
-    #     Message.STAGE_BUY_TRADE_BEGIN,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_BUY_TRADE_BEGIN] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_BUY_TRADE, Message.PRIORITY_STAGE_BUY_TRADE_END),
-    #     Message.STAGE_BUY_TRADE_END,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_BUY_TRADE_END] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_AFTER_TRADE, Message.PRIORITY_STAGE_AFTER_TRADE_BEGIN),
-    #     Message.STAGE_AFTER_TRADE_BEGIN,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_AFTER_TRADE_BEGIN] = 0
-    # context.AddTask(
-    #   Task(
-    #     Priority(
-    #       Message.STAGE_AFTER_TRADE, Message.PRIORITY_STAGE_AFTER_TRADE_END),
-    #     Message.STAGE_AFTER_TRADE_END,
-    #     pd.Timestamp(self.endDate)))
-    # self.counter[Message.STAGE_AFTER_TRADE_END] = 0
+    
     
     
   def NotifyStageChange(self, stage, before):

@@ -37,6 +37,8 @@ from fund_manage import fm5
 from fund_manage import fm6
 from fund_manage import fm7
 
+import dynamicFilter.dvYear
+
 Message = const.Message
 
 # this project
@@ -45,7 +47,7 @@ if __name__ == '__main__':
 
 # https://www.cnblogs.com/nxf-rabbit75/p/11111825.html
 
-VERSION = '2.0.0.12'
+VERSION = '2.0.0.13'
 
 DIR_BUY = const.DV2.DIR_BUY
 DIR_NONE = const.DV2.DIR_NONE
@@ -452,7 +454,7 @@ class DividendGenerator:
         Task(
           Priority(
             Message.STAGE_BEFORE_TRADE, Message.PRIORITY_DIVIDEND),
-          Message.DIVIDEND_POINT, None,
+          Message.DIVIDEND_POINT, None, const.TASK_BROADCAST,
           DividendGenerator.Event(self.DV.dividendMap[context.date])))
     
 
@@ -480,6 +482,7 @@ class DangerousGenerator:
           Message.DANGEROUS_POINT,
           # None,
           self.DV.dangerousQuarterMap[context.date][1],#-timedelta(days=1),
+          const.TASK_BROADCAST,
           DangerousGenerator.Event(self.DV.dangerousQuarterMap[context.date]))
       jump = set()
       jump.add(Message.STAGE_SELL_TRADE)
@@ -521,7 +524,7 @@ class StrategyDV:
     self.eventDF = None
     self.dividendMap = {}  # 除权的详细信息，和eventDF配合使用
     self.dangerousQuarterMap = {}  # 危险季报详细信息，和eventDF配合使用
-    self.accDividend = None #累计分红数据
+    # self.accDividend = None #累计分红数据
     
   
   def BuildGenerator(self):
@@ -590,7 +593,7 @@ class StrategyDV:
     print('### {} CheckPrepare########'.format(self.code))
     self.dv2Index.Run()
     #加载累计分红数据
-    self.accDividend = util.LoadData('stock_statistcs_dvYears', self.code)
+    # self.accDividend = util.LoadData('stock_statistcs_dvYears', self.code)
     # 根据分析数据生成eventDF
     self.genEventDF()
     # 作废原始数据
@@ -727,7 +730,7 @@ class StrategyDV:
       Task(
         Priority(
           Message.STAGE_AFTER_TRADE, Message.PRIORITY_AFTER_TRADE),
-        Message.PRICE_DIFF, None, priceDiff))
+        Message.PRICE_DIFF, None, const.TASK_BROADCAST, priceDiff))
     
     context.dvInfo = (None, buySignal[1], sellSignal[1], None)
     if buySignal[0]:
@@ -736,7 +739,7 @@ class StrategyDV:
         Task(
           Priority(
             Message.STAGE_FUND_MANAGE, Message.PRIORITY_SUGGEST_BUY),
-          Message.SUGGEST_BUY_EVENT, None,
+          Message.SUGGEST_BUY_EVENT, None, const.TASK_CHAIN,
           buySignal[1], sellSignal[1], buySignal[2], buySignal, accDividend))
         
     
@@ -745,7 +748,7 @@ class StrategyDV:
         Task(
           Priority(
             Message.STAGE_SELL_TRADE, Message.PRIORITY_SELL),
-          Message.SELL_EVENT, None, sellSignal[1], sellSignal[2]))
+          Message.SELL_EVENT, None, const.TASK_BROADCAST, sellSignal[1], sellSignal[2]))
     
     if sellSignal[1] != INVALID_SELL_PRICE:
       notify = False
@@ -759,21 +762,21 @@ class StrategyDV:
         context.AddTask(
           Task(
             Priority(Message.STAGE_SELL_TRADE, Message.PRIORITY_BEFORE_DIVIDEND),
-            Message.TARGET_SELL_PRICE_EVENT, None, sellSignal[1]))
+            Message.TARGET_SELL_PRICE_EVENT, None, const.TASK_BROADCAST, sellSignal[1]))
   
   def BuySellSignal(self, date, price):
     buyPrice, sellPrice, where, forecast = self.MakeDecisionPrice2(date)
     #零时放在这里回头挪地方
     #计算五年滚动分红率是否达标
     accDividend = False
-    if date.year in self.accDividend.index:
-      roll5 = self.accDividend.loc[date.year, 'roll5']
-      if date.year <= 2018 and roll5 >= 4:
-        accDividend = True
-      elif date.year == 2019 and roll5 >=3:
-        accDividend = True
-      elif date.year == 2020 and roll5 >=2:
-        accDividend = True
+    # if date.year in self.accDividend.index:
+    #   roll5 = self.accDividend.loc[date.year, 'roll5']
+    #   if date.year <= 2018 and roll5 >= 4:
+    #     accDividend = True
+    #   elif date.year == 2019 and roll5 >=3:
+    #     accDividend = True
+    #   elif date.year == 2020 and roll5 >=2:
+    #     accDividend = True
     ######################################
     buySignal = [False, buyPrice, where, forecast]
     sellSignal = [False, sellPrice, where, forecast]
@@ -875,6 +878,13 @@ class TradeManager:
         Message.MAKE_DECISION,
       ], DV.Process)
 
+      #此处注意顺序
+
+      tmp = dynamicFilter.dvYear.Filter(one['_id'])
+      context.pump.AddHandler([
+        Message.SUGGEST_BUY_EVENT,
+      ], tmp.Process)
+      
       context.pump.AddHandler([
         Message.NEW_DAY,
         Message.SUGGEST_BUY_EVENT,

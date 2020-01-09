@@ -58,7 +58,7 @@ class FundManager:
         Task(
           Priority(
             Message.STAGE_BUY_TRADE, Message.PRIORITY_BUY),
-          Message.BUY_EVENT, None, *task.args))
+          Message.BUY_EVENT, None, const.TASK_BROADCAST, *task.args))
     
   
   def Alloc(self, code, first):

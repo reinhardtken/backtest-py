@@ -138,3 +138,7 @@ class HS300:
   DB_NAME = 'stock'
   COLLECTION_NAME = 'hs300_stock_list'
   
+ 
+  
+TASK_BROADCAST = 1
+TASK_CHAIN = 2

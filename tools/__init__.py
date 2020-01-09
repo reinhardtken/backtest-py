@@ -52,7 +52,14 @@ def AllHS300Code2DB(path):
   df = pd.read_excel(path, dtype=str)
   out = df.to_dict('list')
   all = set()
+  out2 = {}
+  code2Map = {}
   for k, v in out.items():
+    if isinstance(k, int):
+      id = util.String2pdTimestamp(str(k), '%Y%m')
+    else:
+      id = util.String2pdTimestamp(k, '%Y%m')
+    tmpList = []
     for one in v:
       try:
         if len(one) == 6:
@@ -60,8 +67,11 @@ def AllHS300Code2DB(path):
         else:
           tmp = '{:06}'.format(int(one))
         all.add(tmp)
+        tmpList.append(tmp)
       except Exception as e:
         util.PrintException(e)
+    out2[id] = {}
+    out2[id]['data'] = tmpList
   print(all)
   
   allCodes = util.QueryAll()
@@ -69,4 +79,17 @@ def AllHS300Code2DB(path):
   for k, row in allCodes.iterrows():
     if k in all:
       out.append({'_id': k, 'name': row['名称']})
-  util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
+    code2Map[k] = {'_id': k, 'name': row['名称']}
+  # util.SaveMongoDBList(out, 'stock_codeList', 'allHS300')
+  
+  notInAll = set()
+  for k, v in out2.items():
+    for index in range(0, len(v['data'])):
+      try:
+        v['data'][index] = code2Map[v['data'][index]]
+      except Exception as e:
+        util.PrintException(e)
+        notInAll.add(v['data'][index])
+  
+  print(notInAll)
+  util.SaveMongoDBDict(out2, 'stock_codeList', 'allHS300Detail')

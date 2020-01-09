@@ -133,7 +133,7 @@ class FundManager:
         Task(
           Priority(
             4, 2500),
-          5, None, *task.args))
+          5, None, const.TASK_BROADCAST, *task.args))
   
   
   def Alloc(self, code, money):
