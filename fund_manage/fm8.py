@@ -65,9 +65,9 @@ Message = const.Message
 ### FundManager:Move 300134 大富科技, 2011-09-05 00:00:00 121天, -21060.00, 50000.00, 28940.00
 class FundManager:
   def __init__(self, stocks, tm, startDate, endDate):
-    self.TOTALMONEY = 500000
+    self.TOTALMONEY = 200000
     self.NAME = 'fm8'
-    self.perShare = 50000
+    self.perShare = 20000
     # self.nowMax = self.TOTALMONEY / self.perShare
     self.stocks = stocks
     self.code2Name = {}
@@ -222,8 +222,8 @@ class FundManager:
         tmp *=(1+self.stockMap[code]['lastWinLossP']*0.5)
         print('### award winner {} {} {}'.format(code, old, tmp))
       # 单支股票不能超过总额度20%
-      if tmp > self.TOTALMONEY * 0.2:
-        tmp = self.TOTALMONEY * 0.2
+      if tmp > self.TOTALMONEY * 0.15:
+        tmp = self.TOTALMONEY * 0.15
       return tmp
     elif self.stockMap[code]['allWinLoss'] == 0:
       return self.perShare
