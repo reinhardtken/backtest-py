@@ -20,6 +20,7 @@ from filter import ipoYear
 from filter import dvYearAll
 from filter import hs300All
 import tools
+import setting
 
 
 #########################################################
@@ -110,7 +111,7 @@ def RunHS300AndDVYears():
   # TestThree(codes, 100000,
   #           {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
   TestThree(codes, 100000,
-            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': r'C:\workspace\tmp/dv3'})
+            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': setting.PATH.SAVE_PATH})
 
 
 
