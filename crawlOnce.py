@@ -63,12 +63,12 @@ if __name__ == '__main__':
   except Exception as e:
     print(e)
 
-  # 获取全部股票的业绩预告
-  try:
-    crawl.fake_spider.yjyg.Handler.ALL = True
-    crawl.fake_spider.yjyg.run()
-  except Exception as e:
-    print(e)
+  # # 获取全部股票的业绩预告
+  # try:
+  #   crawl.fake_spider.yjyg.Handler.ALL = True
+  #   crawl.fake_spider.yjyg.run()
+  # except Exception as e:
+  #   print(e)
     
     
   #计算全部股票的累计分红
