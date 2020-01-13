@@ -219,23 +219,23 @@ class DVIndex:
     
     
     #统计到N年的累计分红年数和分红率
-    if CONFIG.CALC_DVYEAR in config:
-      acc = 0
-      tmp = []
-      tmpIndex = []
-      for year in range(self.statisticsYearsStart, stopYear + 1):
-        if year in self.statisticsYearsTmp:
-          acc += 1
-        tmpIndex.append(year)
-        tmp.append({'acc': acc, 'percent': acc/(year-self.statisticsYearsStart+1), 'roll5': 0})
-      self.statisticsYearsDF = pd.DataFrame(data=tmp, index=tmpIndex)
-      #计算滚动5年累计分红
-      for year, row in self.statisticsYearsDF.iterrows():
-        if year+5 in self.statisticsYearsDF.index:
-          self.statisticsYearsDF.loc[year+5, 'roll5'] = \
-            self.statisticsYearsDF.loc[year+5, 'acc'] - self.statisticsYearsDF.loc[year, 'acc']
-        else:
-          break
+    # if CONFIG.CALC_DVYEAR in config:
+    acc = 0
+    tmp = []
+    tmpIndex = []
+    for year in range(self.statisticsYearsStart, stopYear + 1):
+      if year in self.statisticsYearsTmp:
+        acc += 1
+      tmpIndex.append(year)
+      tmp.append({'acc': acc, 'percent': acc/(year-self.statisticsYearsStart+1), 'roll5': 0})
+    self.statisticsYearsDF = pd.DataFrame(data=tmp, index=tmpIndex)
+    #计算滚动5年累计分红
+    for year, row in self.statisticsYearsDF.iterrows():
+      if year+5 in self.statisticsYearsDF.index:
+        self.statisticsYearsDF.loc[year+5, 'roll5'] = \
+          self.statisticsYearsDF.loc[year+5, 'acc'] - self.statisticsYearsDF.loc[year, 'acc']
+      else:
+        break
       # tmp = self.statisticsYearsDF.to_dict('index')
       # self.statisticsYearsDF[['acc', 'percent']].fillna(method='ffill', inplace=True)
     
