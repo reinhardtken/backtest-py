@@ -30,38 +30,38 @@ if __name__ == '__main__':
   import crawl.fake_spider.tushare.stockList
   import tools
   
-  #获取沪深300标的的基本信息
-  crawl.fake_spider.tushare.hs300.saveDB(crawl.fake_spider.tushare.hs300.getHS300())
-  #获取全部股票的基本信息
-  crawl.fake_spider.tushare.stockList.saveDB(crawl.fake_spider.tushare.stockList.getBasics())
-  #获取沪深300的K线
-  crawl.fake_spider.tushare.kData.RunHS300Index()
-  #获取全部股票的不复权K线
-  codes = queryAllCode()
-  # k线数据
-  index = 0
-  for code in codes:
-    try:
-      index += 1
-      print('process {} ############################################'.format(code))
-      re = crawl.fake_spider.tushare.kData.getKDataNone(code)
-      crawl.fake_spider.tushare.kData.saveDB3(re, code)
-    except Exception as e:
-      print(e)
-  
-  #获取全部股票的季报增速
-  try:
-    crawl.fake_spider.yjbg.Handler.STOCK_LIST = codes
-    crawl.fake_spider.yjbg.run()
-  except Exception as e:
-    print(e)
-
-  #获取全部股票的年报分红
-  try:
-    crawl.fake_spider.gpfh.Handler.ALL = True
-    crawl.fake_spider.gpfh.run()
-  except Exception as e:
-    print(e)
+  # #获取沪深300标的的基本信息
+  # crawl.fake_spider.tushare.hs300.saveDB(crawl.fake_spider.tushare.hs300.getHS300())
+  # #获取全部股票的基本信息
+  # crawl.fake_spider.tushare.stockList.saveDB(crawl.fake_spider.tushare.stockList.getBasics())
+  # #获取沪深300的K线
+  # crawl.fake_spider.tushare.kData.RunHS300Index()
+  # #获取全部股票的不复权K线
+  # codes = queryAllCode()
+  # # k线数据
+  # index = 0
+  # for code in codes:
+  #   try:
+  #     index += 1
+  #     print('process {} ############################################'.format(code))
+  #     re = crawl.fake_spider.tushare.kData.getKDataNone(code)
+  #     crawl.fake_spider.tushare.kData.saveDB3(re, code)
+  #   except Exception as e:
+  #     print(e)
+  #
+  # #获取全部股票的季报增速
+  # try:
+  #   crawl.fake_spider.yjbg.Handler.STOCK_LIST = codes
+  #   crawl.fake_spider.yjbg.run()
+  # except Exception as e:
+  #   print(e)
+  #
+  # #获取全部股票的年报分红
+  # try:
+  #   crawl.fake_spider.gpfh.Handler.ALL = True
+  #   crawl.fake_spider.gpfh.run()
+  # except Exception as e:
+  #   print(e)
 
   # # 获取全部股票的业绩预告
   # try:

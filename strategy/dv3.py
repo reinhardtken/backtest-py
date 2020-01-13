@@ -517,7 +517,6 @@ class DangerousGenerator:
 class StrategyDV:
   def __init__(self, code, name, tu, startYear, startDate, endDate, **kwargs):
     self.kwargs = kwargs
-    self.kwargs = kwargs
     if 'config' in kwargs and CONFIG.STRATEGE in kwargs['config']:
       self.config = kwargs['config'][CONFIG.STRATEGE]
     else:
@@ -893,7 +892,7 @@ class TradeManager:
       if 'money' in one:
         tmpBeginMoney = one['money']
       A = Account(one['_id'], one['name'], tmpBeginMoney, self.startDate, self.endDate, self.fm)
-      DV = StrategyDV(one['_id'], one['name'], self, self.startYear, self.startDate, self.endDate, **self.kwargs)
+      DV = StrategyDV(one['_id'], one['name'], self, self.startYear, self.startDate, self.endDate)
       self.dvMap[one['_id']] = DV
       self.accountMap[one['_id']] = A
       context = DayContext(one['_id'])
