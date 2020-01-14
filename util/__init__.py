@@ -477,3 +477,41 @@ def StocksDict2Set(codes):
   for one in codes:
     tmp.add(one['_id'])
   return tmp
+
+
+def BackTest(codes, beginMoney, args):
+  import strategy.dv3
+  
+  stock = strategy.dv3.TradeManager(codes, beginMoney=beginMoney)
+  stock.LoadQuotations()
+  stock.LoadIndexs()
+  stock.Merge()
+  stock.CheckPrepare()
+  
+  if 'saveprepare' in args and args['saveprepare']:
+    stock.StorePrepare2DB()
+  
+  if 'backtest' in args and args['backtest']:
+    stock.BackTest()
+    stock.CloseAccount()
+  
+  if 'saveDB' in args:
+    stock.StoreResult2DB(args['saveDB'])
+  
+  if 'check' in args and args['check']:
+    assert stock.CheckResult()
+  
+  if 'draw' in args:
+    stock.Draw()
+  
+  if 'saveFile' in args:
+    stock.Store2File(args['saveFile'])
+  
+  return stock
+
+
+def BackTestFactory(args):
+  def tmp(codes):
+    BackTest(codes, 100000, args)
+  
+  return tmp

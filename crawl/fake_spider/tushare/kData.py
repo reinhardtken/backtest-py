@@ -65,6 +65,20 @@ def getKDataRecent(code):
 
 
 
+def getKDataNoneRecent(code):
+  try:
+    now = datetime.datetime.now()
+    starts = now - datetime.timedelta(days=15)
+    starts = starts.strftime('%Y-%m-%d')
+    df = ts.get_k_data(code, start=starts, autype=None,  index=False)
+    df.loc[:, 'date'] = pd.to_datetime(df.loc[:, 'date'])
+    df.set_index('date', inplace=True)
+    df.drop('code', axis=1, inplace=True)
+    return df
+  except Exception as e:
+    print(e)
+
+
 def getKDataNone(code, starts='2001-01-01', index=False):
   try:
     df = ts.get_k_data(code, start=starts, autype=None,  index=index)

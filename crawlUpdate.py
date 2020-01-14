@@ -35,8 +35,8 @@ if __name__ == '__main__':
   for code in codes:
     try:
       print('process {} ############################################'.format(code))
-      re = crawl.fake_spider.tushare.kData.getKDataRecent(code)
-      crawl.fake_spider.tushare.kData.saveDB(re, code)
+      re = crawl.fake_spider.tushare.kData.getKDataNoneRecent(code)
+      crawl.fake_spider.tushare.kData.saveDB3(re, code)
     except Exception as e:
       print(e)
 
