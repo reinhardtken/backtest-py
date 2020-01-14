@@ -72,6 +72,7 @@ if __name__ == '__main__':
     
     
   #计算全部股票的累计分红
+  tools.CalcDV({'_id': '603987', 'name': '康德莱'})
   tools.CalcDVAll()
   
   #历史所有沪深300股票入库
