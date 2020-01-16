@@ -286,6 +286,16 @@ if __name__ == '__main__':
   # end = '2019-12-31T00:00:00Z'
   # print(dir(setting))
   print(setting.WHO)
+  a = [{'status': 1, 'priceBuy': 1.14, 'priceSell': 0.605, 'priceFrom': 3.21, '_id': '600252', 'name': '中恒集团'},
+       {'status': 1, 'priceBuy': 0.25931034482758647, 'priceSell': -0.0555172413793102, 'priceFrom': 9.13, '_id': '601633', 'name': '长城汽车'},
+       {'status': 1, 'priceBuy': 1.3399999999999999, 'priceSell': 0.7549999999999997, 'priceFrom': 2.34, '_id': '600795', 'name': '国电电力'},
+       {'status': 1, 'priceBuy': 3.200000000000001, 'priceSell': 2.150000000000001, 'priceFrom': 17.85, '_id': '600004', 'name': '白云机场'},
+       {'status': 2, 'total': 34358.399999999994, 'cash': 1967.9999999999964, 'marketValue': 32390.4, 'oldPrice': 12.5,
+        'buyDate': pd.Timestamp('2019-05-06 00:00:00', freq='D'),
+        'number': 44.8, 'winLoss': -23609.6, 'priceBuy': -0.4216, 'priceSell': -0.5662, 'priceFrom': 7.23, '_id': '600177', 'name': '雅戈尔'}]
+  b = pd.DataFrame(a, columns=['_id', 'name', 'status', 'priceBuy', 'priceSell', 'priceFrom', 'total', 'cash', 'marketValue', 'oldPrice', 'buyDate',
+                               'number', 'winLoss'])
+  print(b)
   # tools.LastSignal2File('all_dv3', r'C:\workspace\tmp\signal.xlsx')
   # tools.AllHS300Code2DB(r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx')
   

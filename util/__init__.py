@@ -5,6 +5,7 @@ import datetime
 import re
 import traceback
 import sys
+import time
 
 # thirdpart
 import pandas as pd
@@ -16,6 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import DayLocator, DateFormatter
 from pymongo import MongoClient
 from pymongo import errors
+import objgraph
 
 #this project
 import util
@@ -515,3 +517,35 @@ def BackTestFactory(args):
     BackTest(codes, 100000, args)
   
   return tmp
+
+#########################################################
+
+
+
+class Timer(object):
+  def __init__(self, head, verbose=False):
+    self.head = head
+    self.verbose = verbose
+  
+  def __enter__(self):
+    self.start = time.time()
+    return self
+  
+  def __exit__(self, *args):
+    self.end = time.time()
+    self.secs = self.end - self.start
+    # self.msecs = self.secs  # millisecs
+    if self.verbose:
+      print('{} elapsed time: {} s'.format(self.head, self.secs))
+      
+      
+
+def ObjgraphShowGrowth(info):
+  print(info)
+  objgraph.show_growth()
+  
+
+
+def ObjgraphShowMostCommonTypes(info):
+  print(info)
+  objgraph.show_most_common_types()

@@ -7,6 +7,8 @@ from dateutil import parser
 import heapq
 import traceback
 from queue import PriorityQueue
+import tracemalloc
+import objgraph
 
 # thirdpart
 import pandas as pd
@@ -337,10 +339,10 @@ class Account:
       out['buyDate'] = self.holdStockDateVec[-1]
       out['number'] = self.number
       out['winLoss'] = (current.price-self.oldPrice)*self.number*100
-      if self.priceDiff is not None:
-        out['priceBuy'] = self.priceDiff[0]
-        out['priceSell'] = self.priceDiff[1]
-        out['priceFrom'] = self.priceDiff[3]
+    if self.priceDiff is not None:
+      out['priceBuy'] = self.priceDiff[0]
+      out['priceSell'] = self.priceDiff[1]
+      out['priceFrom'] = self.priceDiff[3]
     return out
   
   
@@ -853,6 +855,7 @@ class TradeManager:
       self.endDate = parser.parse(kwargs['endDate'], ignoretz=True)
     else:
       #运行日
+      #运行日
       now = datetime.now()
       self.endYear = now.year
       self.endDate = pd.Timestamp(now.year, now.month, now.day)
@@ -984,9 +987,24 @@ class TradeManager:
         self.dvMap[one].specialPaper = self.ALL_SPECIAL_PAPER[one]
   
   def CheckPrepare(self):
+    tracemalloc.start()
+    time1 = tracemalloc.take_snapshot()
+
+    util.ObjgraphShowGrowth('CheckPrepare begin')
+    util.ObjgraphShowMostCommonTypes('CheckPrepare begin2')
     for one in self.codes:
       self.dvMap[one].CheckPrepare()
       self.dvMap[one].BuildGenerator()
+      
+    util.ObjgraphShowGrowth('CheckPrepare end')
+    util.ObjgraphShowMostCommonTypes('CheckPrepare end2')
+    
+    time2 = tracemalloc.take_snapshot()
+    top_stats = time2.compare_to(time1, 'lineno')
+    top_stats
+    print("[ Top 10 ]")
+    for stat in top_stats[:10]:
+      print(stat)
   
   
   def loadData(self, dbName, collectionName, condition):
@@ -1089,7 +1107,24 @@ class TradeManager:
       # self.mergeData.fillna(method='ffill', inplace=True)  # 用前面的值来填充
   
   def BackTest(self):
-    self.backTestInner(self.mergeData)
+    
+    
+    with util.Timer('BackTest') as t:
+      self.backTestInner(self.mergeData)
+
+
+    util.ObjgraphShowGrowth('BackTest end')
+    util.ObjgraphShowMostCommonTypes('BackTest end2')
+    
+    
+    snapshot = tracemalloc.take_snapshot()
+    top_stats = snapshot.statistics('lineno')
+
+    print("[ Top 10 ]")
+    for stat in top_stats[:10]:
+      print(stat)
+      
+      
   
   def backTestOne(self, date, row, code, stage):
     context = self.context[code]

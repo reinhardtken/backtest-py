@@ -136,7 +136,12 @@ class FundManager:
     df.loc[date, 'retracementP'] = maxAndRetracement.R.history.value
     df.loc[date, 'retracementD'] = maxAndRetracement.R.history.days
     # detail['date'] = date
-    self.holdDetail.append((date,detail))
+    if not month:
+      self.holdDetail.append((date, detail))
+      if len(self.holdDetail) > 5:
+        self.holdDetail = self.holdDetail[-5:]
+  
+  
   
   def Process(self, context, task):
     if task.key == Message.SUGGEST_BUY_EVENT:

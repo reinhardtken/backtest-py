@@ -14,3 +14,4 @@ PHANTOMJS_PATH = r'/home/ken/prog/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'  i
 class PATH:
   ALLHS300_STOCKLIST = r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx'
   SAVE_PATH = r'C:\workspace\tmp/dv3'
+  BACKTEST_COLLECNAME = 'dv2'

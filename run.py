@@ -3,6 +3,7 @@
 # sys
 from datetime import datetime
 from dateutil import parser
+import msvcrt
 
 # thirdpart
 import pandas as pd
@@ -27,7 +28,7 @@ import setting
 def TestThree(codes, beginMoney, args):
   import strategy.dv3
   
-  stock = strategy.dv3.TradeManager(codes, beginMoney=beginMoney)
+  stock = strategy.dv3.TradeManager(codes, beginMoney=beginMoney,endDate= '2020-01-14T00:00:00Z')
   stock.LoadQuotations()
   stock.LoadIndexs()
   stock.Merge()
@@ -35,23 +36,23 @@ def TestThree(codes, beginMoney, args):
   
   if 'saveprepare' in args and args['saveprepare']:
     stock.StorePrepare2DB()
-  
+
   if 'backtest' in args and args['backtest']:
     stock.BackTest()
     stock.CloseAccount()
-  
+
   if 'saveDB' in args:
     stock.StoreResult2DB(args['saveDB'])
-  
+
   if 'check' in args and args['check']:
     assert stock.CheckResult()
-  
+
   if 'draw' in args:
     stock.Draw()
-  
+
   if 'saveFile' in args:
     stock.Store2File(args['saveFile'])
-  
+
   return stock
 
 
@@ -61,7 +62,7 @@ def RunHS300AndDVYears():
   client = MongoClient()
   db = client["stock_backtest"]
   # collection = db["all_dv3"]
-  collection = db["dv2"]
+  collection = db[setting.BACKTEST_COLLECNAME]
   cursor = collection.find({'tradeCounter': {'$gte': 1}})
   # cursor = collection.find()
   for one in cursor:
@@ -108,8 +109,14 @@ def RunHS300AndDVYears():
 
   tools.DoAction(empty, tools.CalcDV)
       
-  # TestThree(codes, 100000,
-  #           {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
+
+  # codes = [
+  #   {'_id': '600252', 'name': '中恒集团'},
+  #   {'_id': '601633', 'name': '长城汽车'},
+  #   {'_id': '600795', 'name': '国电电力'},
+  #   {'_id': '600004', 'name': '白云机场'},
+  #   {'_id': '600177', 'name': 	'雅戈尔'},
+  # ]
   TestThree(codes, 100000,
             {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': setting.PATH.SAVE_PATH})
 
@@ -121,5 +128,6 @@ def RunHS300AndDVYears():
 if __name__ == '__main__':
   #对全部股票标的中，产生过交易并且属于沪深300，并且分红年份达标的标的回测
   RunHS300AndDVYears()
+  #ch = msvcrt.getch()
 
   

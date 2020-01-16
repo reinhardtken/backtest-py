@@ -97,7 +97,7 @@ class Pump:
     if currentStage == Message.STAGE_STRATEGY:
       for one in self.tmp:
         if one.util is None:
-          # del self.extra[k]
+          self.taskPriorityQueue.task_done()
           pass
         elif self.context.date >= one.util:
           # del self.extra[k]
