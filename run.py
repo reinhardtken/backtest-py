@@ -62,7 +62,7 @@ def RunHS300AndDVYears():
   client = MongoClient()
   db = client["stock_backtest"]
   # collection = db["all_dv3"]
-  collection = db[setting.BACKTEST_COLLECNAME]
+  collection = db[setting.PATH.BACKTEST_COLLECNAME]
   cursor = collection.find({'tradeCounter': {'$gte': 1}})
   # cursor = collection.find()
   for one in cursor:
