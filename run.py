@@ -4,6 +4,8 @@
 from datetime import datetime
 from dateutil import parser
 import msvcrt
+from cProfile import Profile
+import pstats
 
 # thirdpart
 import pandas as pd
@@ -127,7 +129,24 @@ def RunHS300AndDVYears():
 ###这个文件每天执行一次，只回测runEveryWeek的输出结果集合，刷新最新的回测结果
 if __name__ == '__main__':
   #对全部股票标的中，产生过交易并且属于沪深300，并且分红年份达标的标的回测
+  # ncalls，是指相应代码 / 函数被调用的次数；
+  # tottime，是指对应代码 / 函数总共执行所需要的时间（注意，并不包括它调用的其他代码 / 函数的执行时间）；
+  # percall，就是上述两者相除的结果，也就是 tottime / ncalls;
+  # cumtime，则是指对应代码 / 函数总共执行所需要的时间，这里包括了它调用的其他代码 / 函数的执行时间；
+  # cumtime percall，则是 cumtime 和 ncalls 相除的平均结果。
+
+  prof = Profile()
+  prof.enable()
   RunHS300AndDVYears()
+  prof.create_stats()
+
+  p = pstats.Stats(prof)
+  # p.print_stats()
+  # p.sort_stats('calls').print_stats(20)
+  p.sort_stats('cumulative').print_stats(20)
+  # p.print_callees()
+  # cProfile.run('RunHS300AndDVYears()')
+  # RunHS300AndDVYears()
   #ch = msvcrt.getch()
 
   

@@ -118,9 +118,40 @@ class FundManager:
     
     self.holdDetail = []
     # self.lastAccDivedendNegative = {} #记录因为分红不合格丢弃的开仓动作
+    self.tmpGatherIndexW = []
+    self.tmpGatherIndexM = []
+    self.tmpGatherDataW = []
+    self.tmpGatherDataM = []
+    self.gatherSetW = set()
+    self.gatherSetM = set()
+    
   
-  def gather(self, date, df, maxAndRetracement, month):
+  def gather(self, date, index, df, maxAndRetracement, month):
+    #可见pandas里面的indexing是非常非常耗时的操作
+    #BackTest elapsed time: 77.35989427566528 s
+    # 1    0.001    0.001   83.615   83.615 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1109(BackTest)
+    #        1    0.183    0.183   77.360   77.360 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1155(backTestInner)
+    #    65910    0.306    0.000   76.109    0.001 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1129(backTestOne)
+    #    65910    0.839    0.000   72.173    0.001 C:\workspace\code\self\github\backtest-py\comm\__init__.py:95(Loop)
+    #    24710    0.125    0.000   62.643    0.003 C:\workspace\code\self\github\backtest-py\fund_manage\fm8.py:184(Process)
+    #     2700    0.012    0.000   60.823    0.023 C:\workspace\code\self\github\backtest-py\fund_manage\fm8.py:126(gather)
+    #     2700    0.608    0.000   60.812    0.023 C:\workspace\code\self\github\backtest-py\fund_manage\fm8.py:133(gather1)
+    #    32954    0.849    0.000   56.510    0.002 C:\Programs\Python\Python37\lib\site-packages\pandas\core\indexing.py:196(__setitem__)
+    # self.gather1(date, df, maxAndRetracement, month)
+    #BackTest elapsed time: 12.52730393409729 s
+    # 1    0.001    0.001   16.861   16.861 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1109(BackTest)
+    #        1    0.126    0.126   12.528   12.528 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1155(backTestInner)
+    #    65910    0.210    0.000   11.595    0.000 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1129(backTestOne)
+    #        1    0.007    0.007   10.172   10.172 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:989(CheckPrepare)
+    #    65910    0.584    0.000    8.686    0.000 C:\workspace\code\self\github\backtest-py\comm\__init__.py:95(Loop)
+    self.gather2(date, index, df, maxAndRetracement, month)
+
+
+  def gather1(self, date, df, maxAndRetracement, month):
+  
     digest, detail = self.TM.CalcNowValue()
+  
+    # cost too much time
     df.loc[date, 'cash'] = self.totalMoney
     df.loc[date, 'capital'] = self.TOTALMONEY
     df.loc[date, 'marketValue'] = digest['marketValue']
@@ -135,12 +166,38 @@ class FundManager:
     df.loc[date, 'maxValue'] = maxAndRetracement.M.value
     df.loc[date, 'retracementP'] = maxAndRetracement.R.history.value
     df.loc[date, 'retracementD'] = maxAndRetracement.R.history.days
-    # detail['date'] = date
+  
     if not month:
       self.holdDetail.append((date, detail))
       if len(self.holdDetail) > 5:
         self.holdDetail = self.holdDetail[-5:]
+
+
+  def gather2(self, date, index, data, maxAndRetracement, month):
   
+    digest, detail = self.TM.CalcNowValue()
+    df = {}
+    index.append(date)
+    df['cash'] = self.totalMoney
+    df['capital'] = self.TOTALMONEY
+    df['marketValue'] = digest['marketValue']
+    df['stockNumber'] = digest['stockNumber']
+    df['total'] = self.totalMoney + digest['marketValue']
+    df['profit'] = df['total'] - self.TOTALMONEY
+    df['percent'] = df['profit'] / self.TOTALMONEY
+    df['utilization'] = (df['capital'] - df['cash'])
+    df['utilizationP'] = df['utilization'] / df['capital']
+    # 新高与回撤
+    maxAndRetracement.Calc(df['total'], date)
+    df['maxValue'] = maxAndRetracement.M.value
+    df['retracementP'] = maxAndRetracement.R.history.value
+    df['retracementD'] = maxAndRetracement.R.history.days
+    data.append(df)
+  
+    if not month:
+      self.holdDetail.append((date, detail))
+      if len(self.holdDetail) > 5:
+        self.holdDetail = self.holdDetail[-5:]
   
   
   def Process(self, context, task):
@@ -154,10 +211,16 @@ class FundManager:
     elif task.key == Message.OTHER_WORK:
       if context.date in self.dfW.index:
         # 计算每周终值
-        self.gather(context.date, self.dfW, self.maxAndRetracementW, False)
+        # self.gather(context.date, self.dfW, self.maxAndRetracementW, False)
+        if context.date not in self.gatherSetW:
+          self.gatherSetW.add(context.date)
+          self.gather(context.date, self.tmpGatherIndexW, self.tmpGatherDataW, self.maxAndRetracementW, False)
       if context.date in self.dfM.index:
         # 计算月度终值
-        self.gather(context.date, self.dfM, self.maxAndRetracementM, True)
+        # self.gather(context.date, self.dfM, self.maxAndRetracementM, True)
+        if context.date not in self.gatherSetM:
+          self.gatherSetM.add(context.date)
+          self.gather(context.date, self.tmpGatherIndexM, self.tmpGatherDataM, self.maxAndRetracementM, True)
     elif task.key == Message.NEW_DAY:
       self.lastDate = context.date
   
@@ -293,7 +356,19 @@ class FundManager:
               break
       self.eventCache = {}
   
+  
+  def sync(self):
+    if self.tmpGatherDataM is None:
+      pass
+    else:
+      self.dfM = pd.DataFrame(data=self.tmpGatherDataM, index=self.tmpGatherIndexM)
+      self.dfW = pd.DataFrame(data=self.tmpGatherDataW, index=self.tmpGatherIndexW)
+      self.tmpGatherDataM = None
+    
+    
   def Draw(self, collectionName):
+    self.sync()
+    
     self.dfW['_id'] = self.dfW.index
     util.SaveMongoDB_DF(self.dfW, 'stock_result', collectionName)
     self.dfW['profit'].fillna(method='ffill', inplace=True)
@@ -302,6 +377,8 @@ class FundManager:
     plt.show()
   
   def Store2File(self, fileName):
+    self.sync()
+    
     self.dfM.to_excel(fileName + "_M.xlsx")
     self.dfW.to_excel(fileName + "_W.xlsx")
     out = []

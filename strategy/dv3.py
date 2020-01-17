@@ -1109,7 +1109,7 @@ class TradeManager:
   def BackTest(self):
     
     
-    with util.Timer('BackTest') as t:
+    with util.Timer('BackTest', True) as t:
       self.backTestInner(self.mergeData)
 
 
@@ -1117,12 +1117,12 @@ class TradeManager:
     util.ObjgraphShowMostCommonTypes('BackTest end2')
     
     
-    snapshot = tracemalloc.take_snapshot()
-    top_stats = snapshot.statistics('lineno')
-
-    print("[ Top 10 ]")
-    for stat in top_stats[:10]:
-      print(stat)
+    # snapshot = tracemalloc.take_snapshot()
+    # top_stats = snapshot.statistics('lineno')
+    #
+    # print("[ Top 10 ]")
+    # for stat in top_stats[:10]:
+    #   print(stat)
       
       
   
