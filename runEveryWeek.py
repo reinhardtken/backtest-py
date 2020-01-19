@@ -36,14 +36,17 @@ if __name__ == '__main__':
   
   # 更新沪深300的K线
   crawl.fake_spider.tushare.kData.RunHS300IndexRecent()
-  # #获取全部股票的不复权K线
-  codes = queryAllCode()
+  # #获取要更新股票的不复权K线
+  # codes = queryAllCode()
+
+  df = pd.read_excel(setting.PATH.EVERYDAY_STOCKLIST, dtype=str)
+  codes = df.to_dict('records')
   # 更新k线数据
   for code in codes:
     try:
-      print('process {} ############################################'.format(code))
-      re = crawl.fake_spider.tushare.kData.getKDataNoneRecent(code)
-      crawl.fake_spider.tushare.kData.saveDB3(re, code)
+      print('process {} {}############################################'.format(code['_id'], code['name']))
+      re = crawl.fake_spider.tushare.kData.getKDataNoneRecent(code['_id'])
+      crawl.fake_spider.tushare.kData.saveDB3(re, code['_id'])
     except Exception as e:
       print(e)
   
@@ -55,8 +58,7 @@ if __name__ == '__main__':
     # hs300.Filter,
     ipoYear.Filter,
   ]
-  df = pd.read_excel(setting.PATH.EVERYDAY_STOCKLIST, dtype=str)
-  codes = df.to_dict('records')
+  
   tools.DoBacktest(codes,
                    {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'saveFile': setting.PATH.SAVE_PATH,
                     'saveSignal': 'stock_signal_dv3'}, filter)

@@ -49,19 +49,6 @@ if __name__ == '__main__':
       print(e)
       
       
-  #更新最新回测结果
-  filter = [
-    dvYearAll.Filter,
-    # dvYear.Filter,
-    hs300All.Filter,
-    # hs300.Filter,
-    ipoYear.Filter,
-  ]
-  df = pd.read_excel(setting.PATH.EVERYDAY_STOCKLIST, dtype=str)
-  codes = df.to_dict('records')
-  tools.DoBacktest(codes,
-                   {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'saveFile': setting.PATH.SAVE_PATH,
-                    'saveSignal': 'stock_signal_dv3'}, filter)
 
 
 
