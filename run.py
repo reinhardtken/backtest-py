@@ -27,35 +27,7 @@ import setting
 
 
 #########################################################
-def TestThree(codes, beginMoney, args):
-  import strategy.dv3
-  
-  stock = strategy.dv3.TradeManager(codes, beginMoney=beginMoney,endDate= '2020-01-14T00:00:00Z')
-  stock.LoadQuotations()
-  stock.LoadIndexs()
-  stock.Merge()
-  stock.CheckPrepare()
-  
-  if 'saveprepare' in args and args['saveprepare']:
-    stock.StorePrepare2DB()
 
-  if 'backtest' in args and args['backtest']:
-    stock.BackTest()
-    stock.CloseAccount()
-
-  if 'saveDB' in args:
-    stock.StoreResult2DB(args['saveDB'])
-
-  if 'check' in args and args['check']:
-    assert stock.CheckResult()
-
-  if 'draw' in args:
-    stock.Draw()
-
-  if 'saveFile' in args:
-    stock.Store2File(args['saveFile'])
-
-  return stock
 
 
 
@@ -76,51 +48,53 @@ def RunHS300AndDVYears():
   filter = [
     dvYearAll.Filter,
     # dvYear.Filter,
-    # hs300All.Filter,
+    hs300All.Filter,
     # hs300.Filter,
     ipoYear.Filter,
   ]
-  inData = out
-  for one in filter:
-    inData, _ = one(inData)
-  
-
-      
-  tmp = set(inData)
-  codes = []
-  for one in out:
-    if one['_id'] in tmp:
-      codes.append(one)
-  
-  # for one in stockList.VERSION_DV2.DVOK_NOT_HS300:
-  #   if one['_id'] not in in2:
+  # inData = out
+  # for one in filter:
+  #   inData, _ = one(inData)
+  #
+  #
+  #
+  # tmp = set(inData)
+  # codes = []
+  # for one in out:
+  #   if one['_id'] in tmp:
   #     codes.append(one)
   #
-  # for one in stockList.VERSION_DV2.HS300_NOT_DVOK:
-  #   if one['_id'] not in in2:
-  #     codes.append(one)
-  
-  print('### final backtest stock list size {}'.format(len(codes)))
-  empty = []
-  for one in codes:
-    print(one)
-    tmp = util.LoadData('stock_statistcs_dvYears', one['_id'])
-    if tmp is None:
-      print('no dvdata !!! {}'.format(one))
-      empty.append(one)
-
-  tools.DoAction(empty, tools.CalcDV)
+  # # for one in stockList.VERSION_DV2.DVOK_NOT_HS300:
+  # #   if one['_id'] not in in2:
+  # #     codes.append(one)
+  # #
+  # # for one in stockList.VERSION_DV2.HS300_NOT_DVOK:
+  # #   if one['_id'] not in in2:
+  # #     codes.append(one)
+  #
+  # print('### final backtest stock list size {}'.format(len(codes)))
+  # empty = []
+  # for one in codes:
+  #   print(one)
+  #   tmp = util.LoadData('stock_statistcs_dvYears', one['_id'])
+  #   if tmp is None:
+  #     print('no dvdata !!! {}'.format(one))
+  #     empty.append(one)
+  #
+  # tools.DoAction(empty, tools.CalcDV)
       
 
-  # codes = [
-  #   {'_id': '600252', 'name': '中恒集团'},
-  #   {'_id': '601633', 'name': '长城汽车'},
-  #   {'_id': '600795', 'name': '国电电力'},
-  #   {'_id': '600004', 'name': '白云机场'},
-  #   {'_id': '600177', 'name': 	'雅戈尔'},
-  # ]
-  TestThree(codes, 100000,
-            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': setting.PATH.SAVE_PATH})
+  codes = [
+    {'_id': '600252', 'name': '中恒集团'},
+    {'_id': '601633', 'name': '长城汽车'},
+    {'_id': '600795', 'name': '国电电力'},
+    {'_id': '600004', 'name': '白云机场'},
+    {'_id': '600177', 'name': 	'雅戈尔'},
+  ]
+  tools.DoBacktest(codes,
+                   {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None,
+                    'saveFile': setting.PATH.SAVE_PATH,
+                    'saveSignal': 'stock_signal_dv3'}, filter)
 
 
 

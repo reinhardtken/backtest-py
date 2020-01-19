@@ -450,6 +450,9 @@ def ForecastString2Int(info):
   
 def String2pdTimestamp(d, format='%Y-%m-%d'):
   return pd.Timestamp(datetime.datetime.strptime(d, format))
+
+def PDTimestamp2String(d, format='%Y-%m-%d'):
+  return d.to_pydatetime().strftime(format)
   
   
 def IPODate(code):

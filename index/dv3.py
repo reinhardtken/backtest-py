@@ -163,7 +163,8 @@ class DVIndex:
               ### 600661 is zero...
               v['year']['dividendRatio'] = v['year']['allDividend'] / v['year'][GPFH_KEY['EarningsPerShare']]
             except Exception as e:
-              util.PrintException(e)
+              pass
+              # util.PrintException(e)
           
           # 计算分红是不是大于每股收益，如果大于每股收益，显然不可持续
           # 002351 漫步者 买入："date" : ISODate("2011-06-17T00:00:00.000Z"),

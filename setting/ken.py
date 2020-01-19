@@ -15,3 +15,4 @@ class PATH:
   ALLHS300_STOCKLIST = r'C:\profile\2020\个人\投资\沪深300指数历史年分成分股名单.xlsx'
   SAVE_PATH = r'C:\workspace\tmp/dv3'
   BACKTEST_COLLECNAME = 'all_dv2'
+  EVERYDAY_STOCKLIST = r'C:\workspace\tmp\dv3detail.xlsx'

@@ -408,7 +408,9 @@ class Account:
         if task.args[0] == self.sellPrice:
           pass
         else:
-          print("wrong {} {}".format(task.args[0], self.sellPrice))
+          #print("wrong {} {}".format(task.args[0], self.sellPrice))
+          pass
+        
       self.Sell(context.date, task.args[0], context.price, context.index, reason)
     elif task.key == Message.TARGET_SELL_PRICE_EVENT:
       # if self.isHoldStock():
@@ -922,10 +924,10 @@ class TradeManager:
       dvYearTmp = dynamicFilter.dvYear.Filter(one['_id'])
 
       
-      # context.pump.AddHandler([
-      #   Message.NEW_MONTH,
-      #   Message.SUGGEST_BUY_EVENT,
-      # ], hs300Set.Process)
+      context.pump.AddHandler([
+        Message.NEW_MONTH,
+        Message.SUGGEST_BUY_EVENT,
+      ], hs300Set.Process)
 
       context.pump.AddHandler([
         Message.SUGGEST_BUY_EVENT,
@@ -1236,7 +1238,10 @@ class TradeManager:
   
   def Store2File(self, fileName):
     self.fm.Store2File(fileName)
+    
   
+  def SaveSignal(self, dbName):
+    self.fm.SaveSignal(dbName)
   
   
   def StoreResult2DB(self, dbName):

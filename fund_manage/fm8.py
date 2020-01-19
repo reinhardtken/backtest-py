@@ -388,3 +388,8 @@ class FundManager:
     df.to_excel(fileName + "_move.xlsx")
     detail = pd.DataFrame(self.holdDetail[-1][1])
     detail.to_excel(fileName + "detail.xlsx")
+    
+    
+  def SaveSignal(self, dbName):
+    collectionName = util.PDTimestamp2String(self.holdDetail[-1][0])
+    util.SaveMongoDBList(self.holdDetail[-1][1], dbName, collectionName)
