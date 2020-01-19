@@ -1,140 +1,67 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
-# sys
-from datetime import datetime
-from dateutil import parser
-
-# thirdpart
-import pandas as pd
 from pymongo import MongoClient
-import numpy as np
-import tushare as ts
+import pandas as pd
 
-import const
-import util
-from filter import dvYear
-from filter import hs300
-
-# this project
-if __name__ == '__main__':
-  import sys
+import setting
+import tools
+from filter import ipoYear
+from filter import dvYearAll
+from filter import hs300All
 
 
-#########################################################
-def TestThree(codes, beginMoney, args):
-  import strategy.dv3
-  
-  stock = strategy.dv3.TradeManager(codes, beginMoney)
-  stock.LoadQuotations()
-  stock.LoadIndexs()
-  stock.Merge()
-  stock.CheckPrepare()
-  
-  if 'saveprepare' in args and args['saveprepare']:
-    stock.StorePrepare2DB()
-  
-  if 'backtest' in args and args['backtest']:
-    stock.BackTest()
-    stock.CloseAccount()
-  
-  if 'saveDB' in args:
-    stock.StoreResult2DB(args['saveDB'])
-  
-  if 'check' in args and args['check']:
-    assert stock.CheckResult()
-  
-  if 'draw' in args:
-    stock.Draw()
-  
-  if 'saveFile' in args:
-    stock.Store2File(args['saveFile'])
-  
-  return stock
-
-
-def RunHS300AndDVYears():
-  out = []
+def queryAllCode():
+  from pymongo import MongoClient
   client = MongoClient()
-  db = client["stock_backtest"]
-  # collection = db["all_dv3"]
-  collection = db["dv2"]
-  cursor = collection.find({'tradeCounter': {'$gte': 1}})
-  # cursor = collection.find()
-  for one in cursor:
-    # print(one)
-    out.append({'_id': one['_id'], 'name': one['name'], 'percent': one['percent'],
-                'holdStockNatureDate': one['holdStockNatureDate'],
-                'tradeCounter': one['tradeCounter']})
+  db = client['stock']
+  collection = db['stock_list']
+  out = []
+  cursor = collection.find()
+  for c in cursor:
+    out.append(c["_id"])
   
-  inList, outList = dvYear.Filter(out)
-  in2, out2 = hs300.Filter(inList)
-  in3, out3 = hs300.Filter(outList)
-  
-  for one in out:
-    if one['_id'] in out2:
-      print('not hs300 {} {}'.format(one['_id'], one['name']))
-  
-  for one in out:
-    if one['_id'] in in3:
-      print('not dvYear {} {}'.format(one['_id'], one['name']))
-  
-  codes = []
-  for one in out:
-    if one['_id'] in in2:
-      codes.append(one)
-  
-  for one in stockList.VERSION_DV2.DVOK_NOT_HS300:
-    if one['_id'] not in in2:
-      codes.append(one)
-  
-  for one in stockList.VERSION_DV2.HS300_NOT_DVOK:
-    if one['_id'] not in in2:
-      codes.append(one)
-  
-  print('### final backtest stock list size {}'.format(len(codes)))
-  for one in codes:
-    print(one)
-  # TestThree(codes, 100000,
-  #           {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
-  TestThree(codes, 100000,
-            {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None,
-             'saveFile': r'd:/stock_python/out/dv3'})
+  return out
 
 
 #########################################################
-###这个文件每周执行一次，对全部股票集合进行回测，输出最近一年符合交易的标的
+###这个文件每次运行爬取十五天k线，每周每天执行都行
 if __name__ == '__main__':
-  import strategy.dv3
-  from const import stockList
-  from fund_manage import hold
+  import crawl.fake_spider.yjbg
+  import crawl.fake_spider.yjyg
+  import crawl.fake_spider.gpfh
+  import crawl.fake_spider.tushare.kData
+  import crawl.fake_spider.tushare.hs300
+  import crawl.fake_spider.tushare.stockList
   
-  # 下面这段代码是为了生成分红年数数据，因为用这个做了过滤器。
-  # 如果不用分红年份做过滤器，可以不执行，执行一次即可
-  # codes = []
-  # df = util.QueryAll()
-  # for code, row in df.iterrows():
-  #   codes.append({'_id': code, 'name': row['名称']})
-  #
-  # strategy.dv3.CalcDV(codes)
+  # 更新沪深300的K线
+  crawl.fake_spider.tushare.kData.RunHS300IndexRecent()
+  # #获取全部股票的不复权K线
+  codes = queryAllCode()
+  # 更新k线数据
+  for code in codes:
+    try:
+      print('process {} ############################################'.format(code))
+      re = crawl.fake_spider.tushare.kData.getKDataNoneRecent(code)
+      crawl.fake_spider.tushare.kData.saveDB3(re, code)
+    except Exception as e:
+      print(e)
   
-  # 对全部股票标的中，产生过交易并且属于沪深300，并且分红年份达标的标的回测
-  RunHS300AndDVYears()
-  
-  # TestThree(
-  #         # [
-  #         #   {'_id': '600025', 'name': '华能水电', },
-  #         #   {'_id': '601166', 'name': '兴业银行', 'money': 90205},
-  #         #   {'_id': '600900', 'name': '长江电力', 'money': 63905},
-  #         #  ],
-  #   [
-  #     # {'name': '东风股份', '_id': '601515', 'money': 133705},
-  #     {'name': '皖通高速', '_id': '600012', 'money': 52105},
-  #     {'name': '重庆水务', '_id': '601158', 'money': 58105},
-  #     # {'name': '浦发银行', '_id': '600000', 'money': 74505},
-  #     # {'name': '万科', '_id': '000002', 'money': 72705},
-  #     # {'name': '宝钢股份', '_id': '600019', 'money': 70705},
-  #     # {'name': '中国石化', '_id': '600028', 'money': 74405},
-  #     # {'name': '双汇发展', '_id': '000895', 'money': 211205},
-  #     #  {'name': '伟星股份', '_id': '002003', 'money': 80805},
-  #   ],
-  #   100000, {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': 'C:/workspace/tmp/dv3'})
+  # 更新最新回测结果
+  filter = [
+    dvYearAll.Filter,
+    # dvYear.Filter,
+    hs300All.Filter,
+    # hs300.Filter,
+    ipoYear.Filter,
+  ]
+  df = pd.read_excel(setting.PATH.EVERYDAY_STOCKLIST, dtype=str)
+  codes = df.to_dict('records')
+  tools.DoBacktest(codes,
+                   {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'saveFile': setting.PATH.SAVE_PATH,
+                    'saveSignal': 'stock_signal_dv3'}, filter)
+
+
+
+
+

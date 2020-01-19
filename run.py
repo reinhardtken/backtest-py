@@ -32,7 +32,7 @@ import setting
 
 
 def RunHS300AndDVYears():
-  out = []
+  codes = []
   client = MongoClient()
   db = client["stock_backtest"]
   # collection = db["all_dv3"]
@@ -41,7 +41,7 @@ def RunHS300AndDVYears():
   # cursor = collection.find()
   for one in cursor:
     # print(one)
-    out.append({'_id': one['_id'], 'name': one['name'], 'percent': one['percent'],
+    codes.append({'_id': one['_id'], 'name': one['name'], 'percent': one['percent'],
                 'holdStockNatureDate': one['holdStockNatureDate'],
                 'tradeCounter': one['tradeCounter']})
   
@@ -84,13 +84,13 @@ def RunHS300AndDVYears():
   # tools.DoAction(empty, tools.CalcDV)
       
 
-  codes = [
-    {'_id': '600252', 'name': '中恒集团'},
-    {'_id': '601633', 'name': '长城汽车'},
-    {'_id': '600795', 'name': '国电电力'},
-    {'_id': '600004', 'name': '白云机场'},
-    {'_id': '600177', 'name': 	'雅戈尔'},
-  ]
+  # codes = [
+  #   {'_id': '600252', 'name': '中恒集团'},
+  #   {'_id': '601633', 'name': '长城汽车'},
+  #   {'_id': '600795', 'name': '国电电力'},
+  #   {'_id': '600004', 'name': '白云机场'},
+  #   {'_id': '600177', 'name': 	'雅戈尔'},
+  # ]
   tools.DoBacktest(codes,
                    {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None,
                     'saveFile': setting.PATH.SAVE_PATH,

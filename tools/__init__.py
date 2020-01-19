@@ -65,7 +65,7 @@ def AllHS300Code2DB(path):
     tmpList = []
     for one in v:
       try:
-        if len(one) == 6:
+        if isinstance(one, str) and len(one) == 6:
           tmp = one
         else:
           tmp = '{:06}'.format(int(one))
