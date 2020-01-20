@@ -39,7 +39,7 @@ if __name__ == '__main__':
   # #获取要更新股票的不复权K线
   # codes = queryAllCode()
 
-  df = pd.read_excel(setting.PATH.EVERYDAY_STOCKLIST, dtype=str)
+  df = pd.read_excel(setting.CONFIG.EVERYDAY_STOCKLIST, dtype=str)
   codes = df.to_dict('records')
   # 更新k线数据
   for code in codes:
@@ -60,7 +60,7 @@ if __name__ == '__main__':
   ]
   
   tools.DoBacktest(codes,
-                   {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'saveFile': setting.PATH.SAVE_PATH,
+                   {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'saveFile': setting.CONFIG.SAVE_PATH,
                     'saveSignal': 'stock_signal_dv3'}, filter)
 
 

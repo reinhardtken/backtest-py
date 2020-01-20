@@ -42,9 +42,10 @@ from fund_manage import fm8
 
 import dynamicFilter.dvYear
 import dynamicFilter.hs300
+import setting
 
 Message = const.Message
-CONFIG = const.CONFIG
+# CONFIG = const.CONFIG
 
 # this project
 if __name__ == '__main__':
@@ -521,10 +522,6 @@ class DangerousGenerator:
 class StrategyDV:
   def __init__(self, code, name, tu, startYear, startDate, endDate, **kwargs):
     self.kwargs = kwargs
-    if 'config' in kwargs and CONFIG.STRATEGE in kwargs['config']:
-      self.config = kwargs['config'][CONFIG.STRATEGE]
-    else:
-      self.config = {}
       
     self.strategyName = 'dv2'
     self.code = code
@@ -622,7 +619,7 @@ class StrategyDV:
   
   def CheckPrepare(self):
     print('### {} CheckPrepare########'.format(self.code))
-    self.dv2Index.Run(self.config)
+    self.dv2Index.Run()
     #加载累计分红数据
     # self.accDividend = util.LoadData('stock_statistcs_dvYears', self.code)
     # 根据分析数据生成eventDF
@@ -836,31 +833,23 @@ class TradeManager:
   # 代表交易管理
   def __init__(self, stocks, **kwargs):
     self.kwargs = kwargs
-    if 'config' in kwargs:
-      self.config = kwargs['config']
-    else:
-      self.config = {}
-      
-    self.startYear = 2011  # 起始年份
-    start = str(self.startYear) + '-01-01T00:00:00Z'
-    self.startDate = parser.parse(start, ignoretz=True)
-    if 'startDate' in kwargs:
-      self.startYear = int(kwargs['startDate'].split('-')[0])
-      self.startDate = parser.parse(kwargs['startDate'], ignoretz=True)
     
-
-    self.endYear = 2019  # 结束年份
-    end = str(self.endYear) + '-12-31T00:00:00Z'
-    self.endDate = parser.parse(end, ignoretz=True)
-    if 'endDate' in kwargs:
-      self.endYear = int(kwargs['endDate'].split('-')[0])
-      self.endDate = parser.parse(kwargs['endDate'], ignoretz=True)
-    else:
-      #运行日
-      #运行日
+    if setting.CONFIG.START_YEAR == 0:
+      #标志截止日是运行日，起始日是一年前
       now = datetime.now()
       self.endYear = now.year
       self.endDate = pd.Timestamp(now.year, now.month, now.day)
+      self.startYear = now.year-1
+      self.startDate = pd.Timestamp(now.year-1, now.month, now.day)
+    else:
+      self.startYear = setting.CONFIG.START_YEAR  # 起始年份
+      start = setting.CONFIG.START_DATE
+      self.startDate = parser.parse(start, ignoretz=True)
+      
+      self.endYear = setting.CONFIG.END_YEAR  # 结束年份
+      end = setting.CONFIG.END_DATE
+      self.endDate = parser.parse(end, ignoretz=True)
+      
     
     print('### TradeManager ###################################')
     print('### begin, end {} {}'.format(self.startDate, self.endDate))
@@ -888,8 +877,8 @@ class TradeManager:
     self.collectionName = 'all_dv3_'+self.fm.NAME  # 存盘表名
     
     #沪深300动态过滤
-
-    hs300Set = dynamicFilter.hs300.Filter()
+    if setting.CONFIG.DYNAMIC_FILTER_HS300:
+      hs300Set = dynamicFilter.hs300.Filter()
     
     for one in stocks:
       tmpBeginMoney = self.BEGIN_MONEY
@@ -921,17 +910,19 @@ class TradeManager:
 
       #此处注意顺序
 
-      dvYearTmp = dynamicFilter.dvYear.Filter(one['_id'])
+      if setting.CONFIG.DYNAMIC_FILTER_DVYEAR:
+        dvYearTmp = dynamicFilter.dvYear.Filter(one['_id'])
 
-      
-      context.pump.AddHandler([
-        Message.NEW_MONTH,
-        Message.SUGGEST_BUY_EVENT,
-      ], hs300Set.Process)
+      if setting.CONFIG.DYNAMIC_FILTER_HS300:
+        context.pump.AddHandler([
+          Message.NEW_MONTH,
+          Message.SUGGEST_BUY_EVENT,
+        ], hs300Set.Process)
 
-      context.pump.AddHandler([
-        Message.SUGGEST_BUY_EVENT,
-      ], dvYearTmp.Process)
+      if setting.CONFIG.DYNAMIC_FILTER_DVYEAR:
+        context.pump.AddHandler([
+          Message.SUGGEST_BUY_EVENT,
+        ], dvYearTmp.Process)
       
       context.pump.AddHandler([
         Message.NEW_DAY,

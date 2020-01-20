@@ -13,9 +13,10 @@ import numpy as np
 
 import const
 import util
+import setting
 
 GPFH_KEY = const.GPFH_KEYWORD.KEY_NAME
-CONFIG = const.CONFIG
+# CONFIG = const.CONFIG
 
 DIR_BUY = const.DV2.DIR_BUY
 DIR_NONE = const.DV2.DIR_NONE
@@ -99,11 +100,8 @@ class DVIndex:
     # self.dividendYears = 0  # 有过分红的年数
     self.ipoDate = util.IPODate(self.code)
   
-  def Run(self, config):
-    exampleConfig = {
-      CONFIG.FORECAST:True,
-      CONFIG.CALC_DVYEAR:True,
-    }
+  def Run(self):
+
     # 准备判定条件
     now = datetime.now()
     stopYear = now.year
@@ -126,7 +124,7 @@ class DVIndex:
       self.checkPoint[year]['forth'] = quarterPaper[3]
       
       #加载业绩预告
-      if CONFIG.FORECAST in config:
+      if setting.CONFIG.FORECAST:
         forecast = util.LoadForecast(year, self.code)
         self.forecast[year]['first'] = forecast[0]
         self.forecast[year]['second'] = forecast[1]
@@ -220,25 +218,25 @@ class DVIndex:
     
     
     #统计到N年的累计分红年数和分红率
-    # if CONFIG.CALC_DVYEAR in config:
-    acc = 0
-    tmp = []
-    tmpIndex = []
-    for year in range(self.statisticsYearsStart, stopYear + 1):
-      if year in self.statisticsYearsTmp:
-        acc += 1
-      tmpIndex.append(year)
-      tmp.append({'acc': acc, 'percent': acc/(year-self.statisticsYearsStart+1), 'roll5': 0})
-    self.statisticsYearsDF = pd.DataFrame(data=tmp, index=tmpIndex)
-    #计算滚动5年累计分红
-    for year, row in self.statisticsYearsDF.iterrows():
-      if year+5 in self.statisticsYearsDF.index:
-        self.statisticsYearsDF.loc[year+5, 'roll5'] = \
-          self.statisticsYearsDF.loc[year+5, 'acc'] - self.statisticsYearsDF.loc[year, 'acc']
-      else:
-        break
-      # tmp = self.statisticsYearsDF.to_dict('index')
-      # self.statisticsYearsDF[['acc', 'percent']].fillna(method='ffill', inplace=True)
+    if setting.CONFIG.CALC_DVYEAR:
+      acc = 0
+      tmp = []
+      tmpIndex = []
+      for year in range(self.statisticsYearsStart, stopYear + 1):
+        if year in self.statisticsYearsTmp:
+          acc += 1
+        tmpIndex.append(year)
+        tmp.append({'acc': acc, 'percent': acc/(year-self.statisticsYearsStart+1), 'roll5': 0})
+      self.statisticsYearsDF = pd.DataFrame(data=tmp, index=tmpIndex)
+      #计算滚动5年累计分红
+      for year, row in self.statisticsYearsDF.iterrows():
+        if year+5 in self.statisticsYearsDF.index:
+          self.statisticsYearsDF.loc[year+5, 'roll5'] = \
+            self.statisticsYearsDF.loc[year+5, 'acc'] - self.statisticsYearsDF.loc[year, 'acc']
+        else:
+          break
+        # tmp = self.statisticsYearsDF.to_dict('index')
+        # self.statisticsYearsDF[['acc', 'percent']].fillna(method='ffill', inplace=True)
     
     
     

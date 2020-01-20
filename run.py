@@ -32,11 +32,12 @@ import setting
 
 
 def RunHS300AndDVYears():
+  print(dir(setting.CONFIG))
   codes = []
   client = MongoClient()
   db = client["stock_backtest"]
   # collection = db["all_dv3"]
-  collection = db[setting.PATH.BACKTEST_COLLECNAME]
+  collection = db[setting.CONFIG.BACKTEST_COLLECNAME]
   cursor = collection.find({'tradeCounter': {'$gte': 1}})
   # cursor = collection.find()
   for one in cursor:
@@ -93,7 +94,7 @@ def RunHS300AndDVYears():
   # ]
   tools.DoBacktest(codes,
                    {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None,
-                    'saveFile': setting.PATH.SAVE_PATH,
+                    'saveFile': setting.CONFIG.SAVE_PATH,
                     'saveSignal': 'stock_signal_dv3'}, filter)
 
 

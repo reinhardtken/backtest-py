@@ -77,7 +77,7 @@ if __name__ == '__main__':
   #tools.CalcDVAll()
   
   #历史所有沪深300股票入库
-  tools.AllHS300Code2DB(setting.PATH.ALLHS300_STOCKLIST)
+  tools.AllHS300Code2DB(setting.CONFIG.ALLHS300_STOCKLIST)
   
   #跑全部股票
   # out = util.QueryAllCode()

@@ -171,5 +171,5 @@ def DoBacktest(out, params, filter=[]):
     print(one)
 
   innerDoBacktest(codes, 100000,
-            # {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': setting.PATH.SAVE_PATH})
+            # {'check': False, 'backtest': True, 'saveDB': 'all_dv3', 'draw': None, 'saveFile': setting.CONFIG.SAVE_PATH})
                   params)
