@@ -175,7 +175,8 @@ class DVIndex:
                 v['midYear']['dividend'] = 0.8 * v['midYear'][GPFH_KEY['EarningsPerShare']]
                 v['year']['allDividend'] = v['midYear']['dividend'] + v['year']['dividend']
           except Exception as e:
-            util.PrintException(e)
+            # util.PrintException(e)
+            pass
           
           try:
             if GPFH_KEY['EarningsPerShare'] in v['year']:
@@ -214,7 +215,8 @@ class DVIndex:
         self.ProcessQuarterPaper(k, 'third')
         self.ProcessQuarterPaper(k, 'forth')
       except KeyError as e:
-        util.PrintException(e)
+        # util.PrintException(e)
+        pass
     
     
     #统计到N年的累计分红年数和分红率

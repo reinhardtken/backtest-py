@@ -124,9 +124,11 @@ class FundManager:
     self.tmpGatherDataM = []
     self.gatherSetW = set()
     self.gatherSetM = set()
+
+    self.holdDetailEveryDay = []
     
   
-  def gather(self, date, index, df, maxAndRetracement, month):
+  def gather(self, date, digest, detail, index, df, maxAndRetracement, month):
     #可见pandas里面的indexing是非常非常耗时的操作
     #BackTest elapsed time: 77.35989427566528 s
     # 1    0.001    0.001   83.615   83.615 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1109(BackTest)
@@ -144,7 +146,7 @@ class FundManager:
     #    65910    0.210    0.000   11.595    0.000 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:1129(backTestOne)
     #        1    0.007    0.007   10.172   10.172 C:\workspace\code\self\github\backtest-py\strategy\dv3.py:989(CheckPrepare)
     #    65910    0.584    0.000    8.686    0.000 C:\workspace\code\self\github\backtest-py\comm\__init__.py:95(Loop)
-    self.gather2(date, index, df, maxAndRetracement, month)
+    self.gather2(date, digest, detail, index, df, maxAndRetracement, month)
 
 
   def gather1(self, date, df, maxAndRetracement, month):
@@ -173,9 +175,9 @@ class FundManager:
         self.holdDetail = self.holdDetail[-5:]
 
 
-  def gather2(self, date, index, data, maxAndRetracement, month):
+  def gather2(self, date, digest, detail, index, data, maxAndRetracement, month):
   
-    digest, detail = self.TM.CalcNowValue()
+    # digest, detail = self.TM.CalcNowValue()
     df = {}
     index.append(date)
     df['cash'] = self.totalMoney
@@ -209,18 +211,24 @@ class FundManager:
         Message.BUY_EVENT, None, const.TASK_BROADCAST, *task.args)
 
     elif task.key == Message.OTHER_WORK:
+      #计算每天：
+      digest, detail = self.TM.CalcNowValue()
+      self.holdDetailEveryDay.append((context.date, detail))
+      if len(self.holdDetailEveryDay) > 5:
+        self.holdDetailEveryDay = self.holdDetailEveryDay[-5:]
+        
       if context.date in self.dfW.index:
         # 计算每周终值
         # self.gather(context.date, self.dfW, self.maxAndRetracementW, False)
         if context.date not in self.gatherSetW:
           self.gatherSetW.add(context.date)
-          self.gather(context.date, self.tmpGatherIndexW, self.tmpGatherDataW, self.maxAndRetracementW, False)
+          self.gather(context.date, digest, detail, self.tmpGatherIndexW, self.tmpGatherDataW, self.maxAndRetracementW, False)
       if context.date in self.dfM.index:
         # 计算月度终值
         # self.gather(context.date, self.dfM, self.maxAndRetracementM, True)
         if context.date not in self.gatherSetM:
           self.gatherSetM.add(context.date)
-          self.gather(context.date, self.tmpGatherIndexM, self.tmpGatherDataM, self.maxAndRetracementM, True)
+          self.gather(context.date, digest, detail, self.tmpGatherIndexM, self.tmpGatherDataM, self.maxAndRetracementM, True)
     elif task.key == Message.NEW_DAY:
       self.lastDate = context.date
   
@@ -391,5 +399,5 @@ class FundManager:
     
     
   def SaveSignal(self, dbName):
-    collectionName = util.PDTimestamp2String(self.holdDetail[-1][0])
-    util.SaveMongoDBList(self.holdDetail[-1][1], dbName, collectionName)
+    collectionName = util.PDTimestamp2String(self.holdDetailEveryDay[-1][0])
+    util.SaveMongoDBList(self.holdDetailEveryDay[-1][1], dbName, collectionName)
