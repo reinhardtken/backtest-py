@@ -25,12 +25,17 @@
 
 from concurrent import futures
 import time
+import sys
+
 import grpc
 import py_rpc_pb2
 import py_rpc_pb2_grpc
 
 import pandas as pd
 import tushare as ts
+
+import util
+import util.log as log
 
 # 实现 proto 文件中定义的 GreeterServicer
 class Greeter(py_rpc_pb2_grpc.HelloServicer):
@@ -64,7 +69,8 @@ class StockService(py_rpc_pb2_grpc.StockPriceServicer):
 class StockSignalService(py_rpc_pb2_grpc.StockSignalServicer):
   # 实现 proto 文件中定义的 rpc 调用
   def Update(self, request, context):
-    print("Update run...")
+    log.current().info("Update run...")
+    # print("Update run...")
     re = py_rpc_pb2.StockRsp(error=-1)
     try:
       import crawlUpdate
@@ -96,10 +102,14 @@ def serve():
         if server is not None:
             server.stop(0)
     except Exception as e:
-      print("exception..  ")
-      print(e)
+      util.PrintException(e)
 
 if __name__ == '__main__':
+  if len(sys.argv) >= 2:
+    logPath = sys.argv[1]
+  else:
+    logPath = r'C:\workspace\tmp\stockPyConfig.json'
+  util.log.Init('main', logPath)
   # df = ts.get_index()
   # # print(df)
   # re = py_rpc_pb2.LastPriceRsp(error=-1)
@@ -109,4 +119,11 @@ if __name__ == '__main__':
   # re.name = AStock.loc[0, 'name']
   # re.closePrice = AStock.loc[0, 'close']
   # re.openPrice = AStock.loc[0, 'open']
+  log.current().info("server run....")
+  try:
+    a = 1
+    b = 0
+    c = a/b
+  except Exception as e:
+    util.PrintException(e)
   serve()

@@ -1071,7 +1071,7 @@ class TradeManager:
       # endPrice = beforeData.iloc[-1]['close']
       # self.beforeProfit = (endPrice - startPrice)/startPrice
     except Exception as e:
-      print(e)
+      util.PrintException(e)
   
   def LoadIndexs(self):
     if TradeManager.DF_HS300 is None:

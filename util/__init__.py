@@ -6,6 +6,8 @@ import re
 import traceback
 import sys
 import time
+import json
+import os
 
 # thirdpart
 import pandas as pd
@@ -229,8 +231,10 @@ def QueryAllCode():
   
   
 def PrintException(e):
+  import util.log
   msg = traceback.format_exc()
-  print(msg)
+  # print(msg)
+  util.log.current().warning(msg)
 
 
 #加载所有记录
@@ -552,3 +556,34 @@ def ObjgraphShowGrowth(info):
 def ObjgraphShowMostCommonTypes(info):
   print(info)
   objgraph.show_most_common_types()
+  
+#########################################################
+def ReadJsonProp(fileName):
+  with open(fileName) as fp:
+    s = json.load(fp)
+    return s
+
+
+def WriteJsonFile(fileName, content):
+  content = json.dumps(content, sort_keys=True, indent=2)
+  file = open(fileName, "w")
+  file.write(content)
+  file.close()
+
+def GetJsonString(content):
+  return json.dumps(content, sort_keys=True, indent=2)
+
+
+def TodayString():
+  today = datetime.date.today()
+  return today.strftime("%Y-%m-%d")
+
+
+def NowTimeString():
+  now = datetime.datetime.now()
+  return now.strftime("%H-%M-%S")
+
+
+def CreateDir(dir):
+  if not os.path.isdir(dir):
+    os.makedirs(dir)

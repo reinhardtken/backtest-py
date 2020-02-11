@@ -354,7 +354,7 @@ class Account:
             # print("买入（追加买入）： 日期：{}, 触发价格：{}, 价格：{}, 追加数量：{}, 数量：{}, 剩余资金：{}, 原因：{}".format(date, triggerPrice, price,
             #                                                                                nm[0], self.number, self.money, reason))
     except Exception as e:
-      print(e)
+      util.PrintException(e)
   
   def Sell(self, date, sellPrice, price, indexPrice, reason=''):
     if self.isHoldStock():
@@ -1243,7 +1243,7 @@ class TradeManager:
       # endPrice = beforeData.iloc[-1]['close']
       # self.beforeProfit = (endPrice - startPrice)/startPrice
     except Exception as e:
-      print(e)
+      util.PrintException(e)
   
   
   def LoadIndexs(self):

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
+VERSION = '1.0.0.1'
+
 class Message:
   # 除权日，吃需要分红和配股
   DIVIDEND_POINT = 1

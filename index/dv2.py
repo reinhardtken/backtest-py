@@ -179,7 +179,7 @@ class DVIndex:
         self.ProcessQuarterPaper(k, 'third')
         self.ProcessQuarterPaper(k, 'forth')
       except KeyError as e:
-        print(e)
+        util.PrintException(e)
     
     # 针对dangerousPoint清理dividendPoint
     tmp = []
@@ -228,7 +228,7 @@ class DVIndex:
             # 有配股有分红才调整价格
             self.dividendAdjust[one.date] = tmp
         except Exception as e:
-          print(e)
+          util.PrintException(e)
     
     # 清理所有截止日期早于startDate的cooldown
     # Test2('601288', 26405, '农业银行', False, True) ，有2010年的cooldown
